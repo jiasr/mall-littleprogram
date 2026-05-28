@@ -2,21 +2,49 @@ import updateManager from './common/updateManager';
 
 App({
 
+  // 全局请求地址配置
+  globalData: {
+    // 开发环境
+    // baseUrl: 'http://localhost:3000/api',
+
+    // 生产环境
+    baseUrl: 'https://yourdomain.com/api',
+
+    //wxlogin code
+    userapplycode: "",
+
+    // 其他常用接口
+    api: {
+      login: '/user/login',
+      getUserInfo: '/user/info',
+      getArticleList: '/article/list'
+    }
+  },
+
   onLaunch() {
     console.log('onLaunch');
     // 初始化云开发环境
-    wx.cloud.init({
-      env: wx.cloud.DYNAMIC_CURRENT_ENV,
-      traceUser: false
-    })
+    // wx.cloud.init({
+    //   env: wx.cloud.DYNAMIC_CURRENT_ENV,
+    //   traceUser: false
+    // })
 
     // 检查登录状态
     this.checkLogin()
   },
+  onHide() {
+    // 小程序从前台进入后台时执行
+    console.log('小程序隐藏');
+  },
+
+  onError(err) {
+    // 小程序发生脚本错误时执行
+    console.error('小程序错误', err);
+  },
 
   onShow: function () {
     console.log('onShow');
-    console.log(this.globalData.userapplycode)
+
     //updateManager();
   },
 
@@ -40,6 +68,7 @@ App({
           //     wx.setStorageSync('userToken', response.data.token);
           //   }
           // })
+          console.log(this.globalData.userapplycode)
         } else {
           // 获取 code 失败的处理
           console.log('登录失败！' + res.errMsg);
@@ -53,7 +82,6 @@ App({
   },
 
   setUserInfo(userInfo) {
-
     this.globalData.userInfo = userInfo
     this.globalData.openid = userInfo.openid
     this.globalData.role = userInfo.role
