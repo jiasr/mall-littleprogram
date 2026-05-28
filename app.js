@@ -12,6 +12,8 @@ App({
 
     //wxlogin code
     userapplycode: "",
+    // system userid 
+    userid: "",
 
     // 其他常用接口
     api: {
@@ -40,13 +42,18 @@ App({
               'content-type': 'application/json'
             },
             success(response) {
-              console.log('后端登录成功', response);
+              console.log('后端登录成功', response.data.resData.userid);
+              this.globalData.userapplycode = res.code
+              this.globalData.userid = response.data.resData.userid
+              Toast({
+                context: this,
+                selector: '#t-toast',
+                message: this.globalData.userid,
+              });
 
-              // 2. 通常后端会返回自定义登录态(token)，需要存储起来供后续使用
-              wx.setStorageSync('userToken', response.data.token);
             }
           })
-          console.log(this.globalData.userapplycode)
+
         } else {
           // 获取 code 失败的处理
           console.log('登录失败！' + res.errMsg);
