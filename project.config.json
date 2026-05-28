@@ -43,7 +43,12 @@
     "showES6CompileOption": false,
     "useCompilerPlugins": false,
     "ignoreUploadUnusedFiles": true,
-    "useStaticServer": true
+    "useStaticServer": true,
+    "compileWorklet": false,
+    "localPlugins": false,
+    "condition": false,
+    "swc": false,
+    "disableSWC": true
   },
   "compileType": "miniprogram",
   "libVersion": "2.23.1",
