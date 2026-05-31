@@ -1,14 +1,30 @@
 import Toast from 'tdesign-miniprogram/toast/index';
-import { fetchDeliveryAddress } from '../../../../services/address/fetchAddress';
-import { areaData } from '../../../../config/index';
-import { resolveAddress, rejectAddress } from './util';
+import {
+  fetchDeliveryAddress
+} from '../../../../services/address/fetchAddress';
+import {
+  areaData
+} from '../../../../config/index';
+import {
+  resolveAddress,
+  rejectAddress
+} from './util';
 
 const innerPhoneReg = '^1(?:3\\d|4[4-9]|5[0-35-9]|6[67]|7[0-8]|8\\d|9\\d)\\d{8}$';
 const innerNameReg = '^[a-zA-Z\\d\\u4e00-\\u9fa5]+$';
-const labelsOptions = [
-  { id: 0, name: '家' },
-  { id: 1, name: '公司' },
+const labelsOptions = [{
+    id: 0,
+    name: '家'
+  },
+  {
+    id: 1,
+    name: '公司'
+  },
 ];
+
+const app = getApp();
+const userid = app.globalData.userid;
+
 
 Page({
   options: {
@@ -48,7 +64,9 @@ Page({
     verifyTips: '',
   },
   onLoad(options) {
-    const { id } = options;
+    const {
+      id
+    } = options;
     this.init(id);
   },
 
@@ -67,8 +85,13 @@ Page({
   },
   getAddressDetail(id) {
     fetchDeliveryAddress(id).then((detail) => {
-      this.setData({ locationState: detail }, () => {
-        const { isLegal, tips } = this.onVerifyInputLegal();
+      this.setData({
+        locationState: detail
+      }, () => {
+        const {
+          isLegal,
+          tips
+        } = this.onVerifyInputLegal();
         this.setData({
           submitActive: isLegal,
         });
@@ -77,11 +100,14 @@ Page({
     });
   },
   onInputValue(e) {
-    const { item } = e.currentTarget.dataset;
+    const {
+      item
+    } = e.currentTarget.dataset;
     if (item === 'address') {
-      const { selectedOptions = [] } = e.detail;
-      this.setData(
-        {
+      const {
+        selectedOptions = []
+      } = e.detail;
+      this.setData({
           'locationState.provinceCode': selectedOptions[0].value,
           'locationState.provinceName': selectedOptions[0].label,
           'locationState.cityName': selectedOptions[1].label,
@@ -91,7 +117,10 @@ Page({
           areaPickerVisible: false,
         },
         () => {
-          const { isLegal, tips } = this.onVerifyInputLegal();
+          const {
+            isLegal,
+            tips
+          } = this.onVerifyInputLegal();
           this.setData({
             submitActive: isLegal,
           });
@@ -99,13 +128,17 @@ Page({
         },
       );
     } else {
-      const { value = '' } = e.detail;
-      this.setData(
-        {
+      const {
+        value = ''
+      } = e.detail;
+      this.setData({
           [`locationState.${item}`]: value,
         },
         () => {
-          const { isLegal, tips } = this.onVerifyInputLegal();
+          const {
+            isLegal,
+            tips
+          } = this.onVerifyInputLegal();
           this.setData({
             submitActive: isLegal,
           });
@@ -115,12 +148,18 @@ Page({
     }
   },
   onPickArea() {
-    this.setData({ areaPickerVisible: true });
+    this.setData({
+      areaPickerVisible: true
+    });
   },
   onPickLabels(e) {
-    const { item } = e.currentTarget.dataset;
     const {
-      locationState: { labelIndex = undefined },
+      item
+    } = e.currentTarget.dataset;
+    const {
+      locationState: {
+        labelIndex = undefined
+      },
       labels = [],
     } = this.data;
     let payload = {
@@ -128,7 +167,10 @@ Page({
       addressTag: labels[item].name,
     };
     if (item === labelIndex) {
-      payload = { labelIndex: null, addressTag: '' };
+      payload = {
+        labelIndex: null,
+        addressTag: ''
+      };
     }
     this.setData({
       'locationState.labelIndex': payload.labelIndex,
@@ -141,10 +183,16 @@ Page({
     });
   },
   confirmHandle() {
-    const { labels, labelValue } = this.data;
+    const {
+      labels,
+      labelValue
+    } = this.data;
     this.setData({
       visible: false,
-      labels: [...labels, { id: labels[labels.length - 1].id + 1, name: labelValue }],
+      labels: [...labels, {
+        id: labels[labels.length - 1].id + 1,
+        name: labelValue
+      }],
       labelValue: '',
     });
   },
@@ -154,15 +202,24 @@ Page({
       labelValue: '',
     });
   },
-  onCheckDefaultAddress({ detail }) {
-    const { value } = detail;
+  onCheckDefaultAddress({
+    detail
+  }) {
+    const {
+      value
+    } = detail;
     this.setData({
       'locationState.isDefault': value,
     });
   },
 
   onVerifyInputLegal() {
-    const { name, phone, detailAddress, districtName } = this.data.locationState;
+    const {
+      name,
+      phone,
+      detailAddress,
+      districtName
+    } = this.data.locationState;
     const prefixPhoneReg = String(this.properties.phoneReg || innerPhoneReg);
     const prefixNameReg = String(this.properties.nameReg || innerNameReg);
     const nameRegExp = new RegExp(prefixNameReg);
@@ -216,7 +273,10 @@ Page({
     };
   },
 
-  builtInSearch({ code, name }) {
+  builtInSearch({
+    code,
+    name
+  }) {
     return new Promise((resolve, reject) => {
       wx.getSetting({
         success: (res) => {
@@ -259,7 +319,10 @@ Page({
   },
 
   onSearchAddress() {
-    this.builtInSearch({ code: 'scope.userLocation', name: '地址位置' }).then(() => {
+    this.builtInSearch({
+      code: 'scope.userLocation',
+      name: '地址位置'
+    }).then(() => {
       wx.chooseLocation({
         success: (res) => {
           if (res.name) {
@@ -295,7 +358,9 @@ Page({
     });
   },
   formSubmit() {
-    const { submitActive } = this.data;
+    const {
+      submitActive
+    } = this.data;
     if (!submitActive) {
       Toast({
         context: this,
@@ -306,7 +371,9 @@ Page({
       });
       return;
     }
-    const { locationState } = this.data;
+    const {
+      locationState
+    } = this.data;
 
     this.hasSava = true;
 
@@ -332,20 +399,29 @@ Page({
       latitude: locationState.latitude,
       longitude: locationState.longitude,
       storeId: null,
+    }, app);
+    console.log(resolveAddress)
+    wx.navigateBack({
+      delta: 1
     });
-
-    wx.navigateBack({ delta: 1 });
   },
 
   getWeixinAddress(e) {
-    const { locationState } = this.data;
+    const {
+      locationState
+    } = this.data;
     const weixinAddress = e.detail;
-    this.setData(
-      {
-        locationState: { ...locationState, ...weixinAddress },
+    this.setData({
+        locationState: {
+          ...locationState,
+          ...weixinAddress
+        },
       },
       () => {
-        const { isLegal, tips } = this.onVerifyInputLegal();
+        const {
+          isLegal,
+          tips
+        } = this.onVerifyInputLegal();
         this.setData({
           submitActive: isLegal,
         });
