@@ -7,8 +7,8 @@ page {
 }
 
 .goods-list-container .t-search {
-  padding: 0 30rpx;
-  background-color: #fff;
+  padding: 0 50rpx;
+  background-color: #9c3535;
 }
 
 .goods-list-container .t-class__input-container {

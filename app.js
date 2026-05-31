@@ -27,10 +27,10 @@ App({
     console.log('onLaunch');
     console.log('checkLogin');
     wx.login({
-      success: function (res) {
+      success: (res) => {
         console.log(res)
         if (res.code) {
-          console.log('登录成功！' + res.code);
+          console.log('wx login success:get request code ' + res.code);
           // 1. 获取到 code 后，发起网络请求将其发送到自己的后端服务器
           wx.request({
             url: this.globalData.baseUrl + '/v1/user/wx_login', // 建议加上具体路径
@@ -38,19 +38,16 @@ App({
             data: {
               code: res.code
             },
+            timeout: 60000,
             header: {
               'content-type': 'application/json'
             },
-            success(response) {
-              console.log('后端登录成功', response.data.resData.userid);
-              this.globalData.userapplycode = res.code
+            success: (response) => {
+              console.log('后端请求成功，获取userid', response.data.resData.userid);
               this.globalData.userid = response.data.resData.userid
-              Toast({
-                context: this,
-                selector: '#t-toast',
-                message: this.globalData.userid,
-              });
-
+            },
+            fail() {
+              console.log("后端请求失败")
             }
           })
 
@@ -58,16 +55,15 @@ App({
           // 获取 code 失败的处理
           console.log('登录失败！' + res.errMsg);
         }
-      }.bind(this),
+      },
       fail(err) {
         // 接口调用失败（如网络问题、超时）
-        console.error('wx.login 调用失败', err);
+        console.log('wx.login 调用失败', err);
       }
     });
 
-
-
   },
+
   onHide() {
     // 小程序从前台进入后台时执行
     console.log('小程序隐藏');
@@ -75,15 +71,11 @@ App({
 
   onError(err) {
     // 小程序发生脚本错误时执行
-    console.error('小程序错误', err);
+    console.log('小程序错误');
   },
 
   onShow: function () {
     console.log('onShow');
-
-    //updateManager();
   },
-
-
 
 });

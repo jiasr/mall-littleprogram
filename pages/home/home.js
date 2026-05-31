@@ -37,6 +37,7 @@ Page({
   },
 
   onShow() {
+    //自定义tabbar加载，位置位于custom-tab-bar目录
     this.getTabBar().init();
   },
 
@@ -121,7 +122,7 @@ Page({
         goodsListLoadStatus: 3
       });
     }
-    this.changeTitle();
+
   },
 
   // changeTitle() {

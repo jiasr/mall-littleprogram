@@ -1,9 +1,17 @@
 /* eslint-disable no-param-reassign */
-import { fetchDeliveryAddressList } from '../../../../services/address/fetchAddress';
-import Toast from 'tdesign-miniprogram/toast/index';
-import { resolveAddress, rejectAddress } from './util';
-import { getAddressPromise } from '../edit/util';
 
+import Toast from 'tdesign-miniprogram/toast/index';
+import {
+  resolveAddress,
+  rejectAddress
+} from './util';
+import {
+  getAddressPromise
+} from '../edit/util';
+
+const app = getApp();
+const userid = app.globalData.userid;
+// 获取 app 实例
 Page({
   data: {
     addressList: [],
@@ -17,8 +25,11 @@ Page({
   /** 是否已经选择地址，不置为true的话页面离开时会触发取消选择行为 */
   hasSelect: false,
 
+
   onLoad(query) {
-    const { selectMode = '', isOrderSure = '', id = '' } = query;
+    const {
+      selectMode = '', isOrderSure = '', id = ''
+    } = query;
     this.setData({
       isOrderSure: !!isOrderSure,
       id,
@@ -36,16 +47,46 @@ Page({
     }
   },
   getAddressList() {
-    const { id } = this.data;
-    fetchDeliveryAddressList().then((addressList) => {
-      addressList.forEach((address) => {
-        if (address.id === id) {
-          address.checked = true;
-        }
-      });
-      this.setData({ addressList });
+    const {
+      id
+    } = this.data;
+    console.log("开始获取用户地址")
+    wx.request({
+      url: app.globalData.baseUrl + '/v1/address/list',
+      method: 'GET',
+      data: {
+        userid: app.globalData.userid
+      },
+      timeout: 60000,
+      header: {
+        'content-type': 'application/json'
+      },
+      success: (response) => {
+        console.log('后端请求成功：', response.data.resData.data);
+        // 延迟处理
+
+        const addressArray = response.data.resData.data;
+        // 使用 map 转换数组
+        const convertedArray = addressArray.map((address) => ({
+          ...address,
+          phoneNumber: address.mobile,
+          address: `${address.province}${address.city}${address.district}${address.detail}`,
+          tag: "moren",
+        }));
+
+        console.log("set data")
+        this.setData({
+          addressList: convertedArray
+        });
+
+      },
+      fail(err) {
+        console.log("后端请求失败", err);
+      }
     });
+
   },
+
   getWXAddressHandle() {
     wx.chooseAddress({
       success: (res) => {
@@ -66,7 +107,9 @@ Page({
           icon: '',
           duration: 1000,
         });
-        const { length: len } = this.data.addressList;
+        const {
+          length: len
+        } = this.data.addressList;
         this.setData({
           [`addressList[${len}]`]: {
             name: res.userName,
@@ -80,10 +123,17 @@ Page({
       },
     });
   },
-  confirmDeleteHandle({ detail }) {
-    const { id } = detail || {};
+  confirmDeleteHandle({
+    detail
+  }) {
+    const {
+      id
+    } = detail || {};
     if (id !== undefined) {
-      this.setData({ deleteID: id, showDeleteConfirm: true });
+      this.setData({
+        deleteID: id,
+        showDeleteConfirm: true
+      });
       Toast({
         context: this,
         selector: '#t-toast',
@@ -102,31 +152,47 @@ Page({
     }
   },
   deleteAddressHandle(e) {
-    const { id } = e.currentTarget.dataset;
+    const {
+      id
+    } = e.currentTarget.dataset;
     this.setData({
       addressList: this.data.addressList.filter((address) => address.id !== id),
       deleteID: '',
       showDeleteConfirm: false,
     });
   },
-  editAddressHandle({ detail }) {
+  editAddressHandle({
+    detail
+  }) {
     this.waitForNewAddress();
 
-    const { id } = detail || {};
-    wx.navigateTo({ url: `/pages/usercenter/address/edit/index?id=${id}` });
+    const {
+      id
+    } = detail || {};
+    wx.navigateTo({
+      url: `/pages/usercenter/address/edit/index?id=${id}`
+    });
   },
-  selectHandle({ detail }) {
+  selectHandle({
+    detail
+  }) {
     if (this.selectMode) {
       this.hasSelect = true;
       resolveAddress(detail);
-      wx.navigateBack({ delta: 1 });
+      wx.navigateBack({
+        delta: 1
+      });
     } else {
-      this.editAddressHandle({ detail });
+      this.editAddressHandle({
+        detail
+      });
     }
   },
   createHandle() {
     this.waitForNewAddress();
-    wx.navigateTo({ url: '/pages/usercenter/address/edit/index' });
+    wx.navigateTo({
+      url: '/pages/usercenter/address/edit/index'
+    });
   },
 
   waitForNewAddress() {

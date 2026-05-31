@@ -34,7 +34,7 @@
     "custom": true,
     "color": "#666666",
     "selectedColor": "#FF5F15",
-    "backgroundColor": "#ffffff",
+    "backgroundColor": "#333333",
     "borderStyle": "black",
     "list": [
       {
@@ -42,12 +42,8 @@
         "text": "首页"
       },
       {
-        "pagePath": "pages/goods/category/index",
-        "text": "分类"
-      },
-      {
         "pagePath": "pages/cart/index",
-        "text": "购物车"
+        "text": "购物车11"
       },
       {
         "pagePath": "pages/usercenter/index",
