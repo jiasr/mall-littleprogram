@@ -1,6 +1,6 @@
 import Toast from 'tdesign-miniprogram/toast/index';
 import {
-  fetchDeliveryAddress
+  getAddressDetail
 } from '../../../../services/address/fetchAddress';
 import {
   areaData
@@ -64,9 +64,11 @@ Page({
     verifyTips: '',
   },
   onLoad(options) {
+    console.log(options)
     const {
       id
     } = options;
+
     this.init(id);
   },
 
@@ -79,25 +81,74 @@ Page({
   hasSava: false,
 
   init(id) {
+    //
     if (id) {
-      this.getAddressDetail(Number(id));
+      console.log("编辑address:id=" + id)
+      this.getAddressDetail(id);
+    } else {
+      console.log("新建address")
     }
   },
+
   getAddressDetail(id) {
-    fetchDeliveryAddress(id).then((detail) => {
-      this.setData({
-        locationState: detail
-      }, () => {
-        const {
-          isLegal,
-          tips
-        } = this.onVerifyInputLegal();
+    console.log("开始获取用户地址详情")
+    wx.request({
+      url: app.globalData.baseUrl + '/v1/address/detail',
+      method: 'GET',
+      data: {
+        userid: app.globalData.userid,
+        id: id
+      },
+      timeout: 60000,
+      header: {
+        'content-type': 'application/json'
+      },
+      success: (response) => {
+        console.log('后端请求成功：', response.data.resData);
+        const convertdata = {
+          name: response.data.resData.name,
+          phone: response.data.resData.mobile,
+          labelIndex: null,
+          addressId: '',
+          addressTag: '',
+          cityCode: response.data.resData.citycode,
+          cityName: response.data.resData.city,
+          countryCode: '',
+          countryName: '',
+          detailAddress: response.data.resData.detail,
+          districtCode: response.data.resData.districtcode,
+          districtName: response.data.resData.district,
+          isDefault: false,
+          provinceCode: response.data.resData.provincecode,
+          provinceName: response.data.resData.province,
+          isEdit: false,
+          isOrderDetail: false,
+          isOrderSure: false,
+        }
+        // 延迟处理
         this.setData({
-          submitActive: isLegal,
-        });
-        this.privateData.verifyTips = tips;
-      });
+          locationState: convertdata
+        })
+      },
+      fail(err) {
+        console.log("后端请求失败", err);
+      }
     });
+
+    // getAddressDetail(id).then((detail) => {
+    //   this.setData({
+    //     locationState: detail
+    //   }, () => {
+    //     const {
+    //       isLegal,
+    //       tips
+    //     } = this.onVerifyInputLegal();
+    //     this.setData({
+    //       submitActive: isLegal,
+    //     });
+    //     this.privateData.verifyTips = tips;
+    //   });
+    // });
   },
   onInputValue(e) {
     const {
@@ -357,6 +408,7 @@ Page({
       });
     });
   },
+
   formSubmit() {
     const {
       submitActive

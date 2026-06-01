@@ -41,11 +41,13 @@ Page({
   init() {
     this.getAddressList();
   },
+
   onUnload() {
     if (this.selectMode && !this.hasSelect) {
       rejectAddress();
     }
   },
+
   getAddressList() {
     const {
       id
@@ -74,7 +76,7 @@ Page({
           tag: "moren",
         }));
 
-        console.log("set data")
+        console.log("set data：" + convertedArray)
         this.setData({
           addressList: convertedArray
         });
@@ -123,6 +125,7 @@ Page({
       },
     });
   },
+
   confirmDeleteHandle({
     detail
   }) {
@@ -151,6 +154,7 @@ Page({
       });
     }
   },
+
   deleteAddressHandle(e) {
     const {
       id
@@ -161,6 +165,7 @@ Page({
       showDeleteConfirm: false,
     });
   },
+
   editAddressHandle({
     detail
   }) {
