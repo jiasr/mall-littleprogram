@@ -1,8 +1,17 @@
-import { getPermission } from '../../../../utils/getPermission';
-import { phoneRegCheck } from '../../../../utils/util';
+import {
+  getPermission
+} from '../../../../utils/getPermission';
+import {
+  phoneRegCheck
+} from '../../../../utils/util';
 import Toast from 'tdesign-miniprogram/toast/index';
-import { addressParse } from '../../../../utils/addressParse';
-import { resolveAddress, rejectAddress } from '../../address/list/util';
+import {
+  addressParse
+} from '../../../../utils/addressParse';
+import {
+  resolveAddress,
+  rejectAddress
+} from '../../address/list/util';
 
 Component({
   externalClasses: ['t-class'],
@@ -32,10 +41,20 @@ Component({
   methods: {
     getWxLocation() {
       if (this.properties.isDisabledBtn) return;
-      getPermission({ code: 'scope.address', name: '通讯地址' }).then(() => {
+      getPermission({
+        code: 'scope.address',
+        name: '通讯地址'
+      }).then(() => {
         wx.chooseAddress({
           success: async (options) => {
-            const { provinceName, cityName, countyName, detailInfo, userName, telNumber } = options;
+            const {
+              provinceName,
+              cityName,
+              countyName,
+              detailInfo,
+              userName,
+              telNumber
+            } = options;
 
             if (!phoneRegCheck(telNumber)) {
               Toast({
@@ -60,7 +79,11 @@ Component({
             };
 
             try {
-              const { provinceCode, cityCode, districtCode } = await addressParse(provinceName, cityName, countyName);
+              const {
+                provinceCode,
+                cityCode,
+                districtCode
+              } = await addressParse(provinceName, cityName, countyName);
 
               const params = Object.assign(target, {
                 provinceCode,
@@ -70,7 +93,9 @@ Component({
               if (this.properties.isOrderSure) {
                 this.onHandleSubmit(params);
               } else if (this.properties.navigateUrl != '') {
-                const { navigateEvent } = this.properties;
+                const {
+                  navigateEvent
+                } = this.properties;
                 this.triggerEvent('navigate');
                 wx.navigateTo({
                   url: this.properties.navigateUrl,
@@ -82,7 +107,10 @@ Component({
                 this.triggerEvent('change', params);
               }
             } catch (error) {
-              wx.showToast({ title: '地址解析出错，请稍后再试', icon: 'none' });
+              wx.showToast({
+                title: '地址解析出错，请稍后再试',
+                icon: 'none'
+              });
             }
           },
           fail(err) {
@@ -94,7 +122,11 @@ Component({
 
     async queryAddress(addressId) {
       try {
-        const { data } = await apis.userInfo.queryAddress({ addressId });
+        const {
+          data
+        } = await apis.userInfo.queryAddress({
+          addressId
+        });
         return data.userAddressVO;
       } catch (err) {
         console.error('查询地址错误', err);
@@ -111,7 +143,9 @@ Component({
       try {
         const orderPageDeltaNum = this.findPage('pages/order/order-confirm/index');
         if (orderPageDeltaNum > -1) {
-          wx.navigateBack({ delta: 1 });
+          wx.navigateBack({
+            delta: 1
+          });
           resolveAddress(params);
           return;
         }

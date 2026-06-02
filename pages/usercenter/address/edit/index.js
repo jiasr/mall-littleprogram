@@ -6,6 +6,9 @@ import {
   resolveAddress,
   rejectAddress
 } from './util';
+import {
+  addressParse
+} from '../../../../utils/addressParse'
 
 const innerPhoneReg = '^1(?:3\\d|4[4-9]|5[0-35-9]|6[67]|7[0-8]|8\\d|9\\d)\\d{8}$';
 const innerNameReg = '^[a-zA-Z\\d\\u4e00-\\u9fa5]+$';
@@ -206,6 +209,7 @@ Page({
     }
   },
   onPickArea() {
+    console.log("onPickArea")
     this.setData({
       areaPickerVisible: true
     });
@@ -384,31 +388,40 @@ Page({
     });
   },
 
+
+  //点击选位置
   onSearchAddress() {
+    console.log("get wx address onSearchAddress")
     this.builtInSearch({
       code: 'scope.userLocation',
       name: '地址位置'
     }).then(() => {
       wx.chooseLocation({
         success: (res) => {
+          console.log("get wx address onSearchAddress：success")
+          console.log(res)
           if (res.name) {
+            console.log("------------")
             this.triggerEvent('addressParse', {
               address: res.address,
               name: res.name,
               latitude: res.latitude,
               longitude: res.longitude,
             });
+            console.log("------------")
           } else {
             Toast({
               context: this,
               selector: '#t-toast',
               message: '地点为空，请重新选择',
               icon: '',
-              duration: 1000,
+              duration: 2000,
             });
           }
         },
-        fail: function (res) {
+        fail: (res) => {
+          console.log("get wx address fail")
+          console.log(res)
           console.warn(`wx.chooseLocation fail: ${JSON.stringify(res)}`);
           if (res.errMsg !== 'chooseLocation:fail cancel') {
             Toast({
@@ -416,7 +429,15 @@ Page({
               selector: '#t-toast',
               message: '地点错误，请重新选择',
               icon: '',
-              duration: 1000,
+              duration: 2000,
+            });
+          } else {
+            Toast({
+              context: this,
+              selector: '#t-toast',
+              message: '未选择地址',
+              icon: '',
+              duration: 2000,
             });
           }
         },
@@ -424,6 +445,7 @@ Page({
     });
   },
 
+  //提交地址
   formSubmit() {
     const {
       submitActive
@@ -469,10 +491,13 @@ Page({
     });
   },
 
+  //点击获取微信地址
   getWeixinAddress(e) {
+    console.log("get wx address")
     const {
       locationState
     } = this.data;
+    console.log(e)
     const weixinAddress = e.detail;
     this.setData({
         locationState: {

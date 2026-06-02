@@ -1,14 +1,32 @@
-import { areaData } from '../config/index';
+import {
+  areaData
+} from '../config/index';
 
 const addressParse = (provinceName, cityName, countryName) => {
+  console.log(provinceName)
+  console.log(cityName)
+  console.log(countryName)
   return new Promise((resolve, reject) => {
     try {
+
       const province = areaData.find((v) => v.label === provinceName);
-      const { value: provinceCode } = province;
+      console.log(province)
+      const {
+        value: provinceCode
+      } = province;
+      console.log(province)
       const city = province.children.find((v) => v.label === cityName);
-      const { value: cityCode } = city;
+      console.log(city)
+      const {
+        value: cityCode
+      } = city;
+      console.log(city)
       const country = city.children.find((v) => v.label === countryName);
-      const { value: districtCode } = country;
+      console.log(country)
+      const {
+        value: districtCode
+      } = country;
+      console.log(country)
       resolve({
         provinceCode,
         cityCode,
