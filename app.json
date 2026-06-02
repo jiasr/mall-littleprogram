@@ -52,7 +52,9 @@
     ]
   },
   "requiredPrivateInfos": [
-    "chooseAddress"
+    "chooseAddress",
+    "chooseLocation",
+    "getLocation"
   ],
   "lazyCodeLoading": "requiredComponents",
   "usingComponents": {},

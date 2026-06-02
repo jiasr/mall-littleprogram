@@ -1,8 +1,5 @@
 import Toast from 'tdesign-miniprogram/toast/index';
 import {
-  getAddressDetail
-} from '../../../../services/address/fetchAddress';
-import {
   areaData
 } from '../../../../config/index';
 import {
@@ -24,7 +21,6 @@ const labelsOptions = [{
 
 const app = getApp();
 const userid = app.globalData.userid;
-
 
 Page({
   options: {
@@ -79,7 +75,6 @@ Page({
   },
 
   hasSava: false,
-
   init(id) {
     //
     if (id) {
@@ -106,10 +101,11 @@ Page({
       success: (response) => {
         console.log('后端请求成功：', response.data.resData);
         const convertdata = {
+          id: response.data.resData.id,
           name: response.data.resData.name,
           phone: response.data.resData.mobile,
           labelIndex: null,
-          addressId: '',
+          addressId: response.data.resData.id,
           addressTag: '',
           cityCode: response.data.resData.citycode,
           cityName: response.data.resData.city,
@@ -128,6 +124,17 @@ Page({
         // 延迟处理
         this.setData({
           locationState: convertdata
+        }, () => {
+          const {
+            isLegal,
+            tips
+          } = this.onVerifyInputLegal();
+          console.log("验证结果isLegal" + isLegal)
+          console.log("验证结果tips" + tips)
+          this.setData({
+            submitActive: isLegal,
+          });
+          this.privateData.verifyTips = tips;
         })
       },
       fail(err) {
@@ -265,6 +272,7 @@ Page({
   },
 
   onVerifyInputLegal() {
+    console.log("验证输入合法性")
     const {
       name,
       phone,
@@ -277,42 +285,49 @@ Page({
     const phoneRegExp = new RegExp(prefixPhoneReg);
 
     if (!name || !name.trim()) {
+      console.log("请填写收货人")
       return {
         isLegal: false,
         tips: '请填写收货人',
       };
     }
     if (!nameRegExp.test(name)) {
+      console.log("收货人仅支持输入中文、英文（区分大小写）、数字=='^[a-zA-Z\\d\\u4e00-\\u9fa5]+$';")
       return {
         isLegal: false,
         tips: '收货人仅支持输入中文、英文（区分大小写）、数字',
       };
     }
     if (!phone || !phone.trim()) {
+      console.log("请填写手机号")
       return {
         isLegal: false,
         tips: '请填写手机号',
       };
     }
     if (!phoneRegExp.test(phone)) {
+      console.log("请填写正确的手机号^1(?:3\\d|4[4-9]|5[0-35-9]|6[67]|7[0-8]|8\\d|9\\d)\\d{8}$")
       return {
         isLegal: false,
         tips: '请填写正确的手机号',
       };
     }
     if (!districtName || !districtName.trim()) {
+      console.log("请选择省市区信息")
       return {
         isLegal: false,
         tips: '请选择省市区信息',
       };
     }
     if (!detailAddress || !detailAddress.trim()) {
+      console.log("请完善详细地址")
       return {
         isLegal: false,
         tips: '请完善详细地址',
       };
     }
     if (detailAddress && detailAddress.trim().length > 50) {
+      console.log("详细地址不能超过50个字符")
       return {
         isLegal: false,
         tips: '详细地址不能超过50个字符',
@@ -430,11 +445,7 @@ Page({
     this.hasSava = true;
 
     resolveAddress({
-      saasId: '88888888',
-      uid: `88888888205500`,
-      authToken: null,
       id: locationState.addressId,
-      addressId: locationState.addressId,
       phone: locationState.phone,
       name: locationState.name,
       countryName: locationState.countryName,
@@ -452,7 +463,7 @@ Page({
       longitude: locationState.longitude,
       storeId: null,
     }, app);
-    console.log(resolveAddress)
+    console.log("处理完成")
     wx.navigateBack({
       delta: 1
     });

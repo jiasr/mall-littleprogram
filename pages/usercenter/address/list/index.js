@@ -35,13 +35,12 @@ Page({
       id,
     });
     this.selectMode = !!selectMode;
-    this.init();
-  },
-
-  init() {
     this.getAddressList();
   },
-
+  onShow() {
+    //自定义tabbar加载，位置位于custom-tab-bar目录
+    this.getAddressList();
+  },
   onUnload() {
     if (this.selectMode && !this.hasSelect) {
       rejectAddress();
