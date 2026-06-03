@@ -40,6 +40,4 @@ const getPermission = ({ code, name }) => {
   });
 };
 
-module.exports = {
-  getPermission,
-};
+export { getPermission };

@@ -7,7 +7,8 @@ import {
   rejectAddress
 } from './util';
 import {
-  addressParse
+  addressParse,
+  parseAddressFromString
 } from '../../../../utils/addressParse'
 
 const innerPhoneReg = '^1(?:3\\d|4[4-9]|5[0-35-9]|6[67]|7[0-8]|8\\d|9\\d)\\d{8}$';
@@ -402,11 +403,37 @@ Page({
           console.log(res)
           if (res.name) {
             console.log("------------")
-            this.triggerEvent('addressParse', {
-              address: res.address,
-              name: res.name,
-              latitude: res.latitude,
-              longitude: res.longitude,
+            parseAddressFromString(res.address).then(({
+              provinceCode,
+              cityCode,
+              districtCode,
+              provinceName,
+              cityName,
+              districtName
+            }) => {
+              // 剩余部分作为详细地址
+              const detailPrefix = provinceName + cityName + districtName;
+              const detailAddress = res.address.substring(detailPrefix.length).trim();
+              this.setData({
+                'locationState.provinceName': provinceName,
+                'locationState.provinceCode': provinceCode,
+                'locationState.cityName': cityName,
+                'locationState.cityCode': cityCode,
+                'locationState.districtName': districtName,
+                'locationState.districtCode': districtCode,
+                'locationState.detailAddress': detailAddress,
+                'locationState.latitude': res.latitude,
+                'locationState.longitude': res.longitude,
+              });
+            }).catch((err) => {
+              console.warn('地址解析失败', err);
+              Toast({
+                context: this,
+                selector: '#t-toast',
+                message: '地址解析失败，请稍后再试',
+                icon: '',
+                duration: 2000,
+              });
             });
             console.log("------------")
           } else {
