@@ -37,10 +37,10 @@ export const resolveAddress = (address, app) => {
     },
     success: (response) => {
       console.log('后端请求成功：', response.data.resData.data);
-      // 延迟处理
-      // allAddress.forEach(({
-      //   resolver
-      // }) => resolver(address));
+      // 通知等待中的 Promise（如列表页的 waitForNewAddress）
+      allAddress.forEach(({
+        resolver
+      }) => resolver(address));
     },
     fail(err) {
       console.log("后端请求失败", err);

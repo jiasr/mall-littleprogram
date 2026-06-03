@@ -51,39 +51,49 @@ export const parseAddressFromString = (fullAddress) => {
 
 /**
  * 从 wx.chooseAddress 返回的单独省/市/区名中匹配对应的 code
+ * 注意：微信返回的名称可能和 areaData 中的 label 不完全一致（如"北京市" vs "北京"），
+ * 优先精确匹配，失败时尝试模糊匹配（包含关系）
  */
 export const addressParse = (provinceName, cityName, countryName) => {
-  console.log(provinceName)
-  console.log(cityName)
-  console.log(countryName)
+  console.log('addressParse 输入:', provinceName, cityName, countryName);
   return new Promise((resolve, reject) => {
     try {
+      // 省份匹配：先精确匹配，再模糊匹配
+      let province = areaData.find((v) => v.label === provinceName);
+      if (!province) {
+        province = areaData.find((v) => v.label.includes(provinceName) || provinceName.includes(v.label));
+      }
+      if (!province) {
+        console.error('未匹配到省份:', provinceName);
+        return reject(new Error(`未匹配到省份: ${provinceName}`));
+      }
+      const provinceCode = province.value;
 
-      const province = areaData.find((v) => v.label === provinceName);
-      console.log(province)
-      const {
-        value: provinceCode
-      } = province;
-      console.log(province)
-      const city = province.children.find((v) => v.label === cityName);
-      console.log(city)
-      const {
-        value: cityCode
-      } = city;
-      console.log(city)
-      const country = city.children.find((v) => v.label === countryName);
-      console.log(country)
-      const {
-        value: districtCode
-      } = country;
-      console.log(country)
-      resolve({
-        provinceCode,
-        cityCode,
-        districtCode,
-      });
+      // 城市匹配
+      let city = province.children.find((v) => v.label === cityName);
+      if (!city) {
+        city = province.children.find((v) => v.label.includes(cityName) || cityName.includes(v.label));
+      }
+      if (!city) {
+        console.error('未匹配到城市:', cityName, '省份:', provinceName);
+        return reject(new Error(`未匹配到城市: ${cityName}`));
+      }
+      const cityCode = city.value;
+
+      // 区县匹配
+      let district = city.children.find((v) => v.label === countryName);
+      if (!district) {
+        district = city.children.find((v) => v.label.includes(countryName) || countryName.includes(v.label));
+      }
+      if (!district) {
+        console.error('未匹配到区县:', countryName, '城市:', cityName);
+        return reject(new Error(`未匹配到区县: ${countryName}`));
+      }
+      const districtCode = district.value;
+
+      resolve({ provinceCode, cityCode, districtCode });
     } catch (error) {
-      reject('地址解析失败');
+      reject(error);
     }
   });
 };

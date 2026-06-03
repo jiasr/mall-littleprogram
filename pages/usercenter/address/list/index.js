@@ -25,7 +25,6 @@ Page({
   /** 是否已经选择地址，不置为true的话页面离开时会触发取消选择行为 */
   hasSelect: false,
 
-
   onLoad(query) {
     const {
       selectMode = '', isOrderSure = '', id = ''
@@ -35,12 +34,13 @@ Page({
       id,
     });
     this.selectMode = !!selectMode;
-    this.getAddressList();
   },
+
   onShow() {
     //自定义tabbar加载，位置位于custom-tab-bar目录
     this.getAddressList();
   },
+
   onUnload() {
     if (this.selectMode && !this.hasSelect) {
       rejectAddress();
@@ -89,6 +89,7 @@ Page({
   },
 
   getWXAddressHandle() {
+    console.log("choose wx location")
     wx.chooseAddress({
       success: (res) => {
         if (res.errMsg.indexOf('ok') === -1) {
@@ -155,14 +156,31 @@ Page({
   },
 
   deleteAddressHandle(e) {
-    const {
-      id
-    } = e.currentTarget.dataset;
-    this.setData({
-      addressList: this.data.addressList.filter((address) => address.id !== id),
-      deleteID: '',
-      showDeleteConfirm: false,
+    console.group(e)
+    const id = e.currentTarget.dataset;
+    console.group(e.currentTarget.dataset)
+    wx.request({
+      url: app.globalData.baseUrl + '/v1/address/delete',
+      method: 'POST',
+      data: {
+        userid: app.globalData.userid,
+        id: id
+      },
+      timeout: 60000,
+      header: {
+        'content-type': 'application/json'
+      },
+      success: (response) => {
+        console.log('后端请求成功：', response.data.resData.data);
+        this.getAddressList();
+      },
+      fail(err) {
+        console.log("后端请求失败", err);
+      }
     });
+
+
+
   },
 
   editAddressHandle({
@@ -177,6 +195,7 @@ Page({
       url: `/pages/usercenter/address/edit/index?id=${id}`
     });
   },
+
   selectHandle({
     detail
   }) {
@@ -192,6 +211,7 @@ Page({
       });
     }
   },
+
   createHandle() {
     this.waitForNewAddress();
     wx.navigateTo({
@@ -200,6 +220,7 @@ Page({
   },
 
   waitForNewAddress() {
+    console.log("waitForNewAddress")
     getAddressPromise()
       .then((newAddress) => {
         let addressList = [...this.data.addressList];

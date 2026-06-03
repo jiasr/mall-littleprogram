@@ -33,13 +33,9 @@ Page({
   externalClasses: ['theme-wrapper-class'],
   data: {
     locationState: {
-      labelIndex: null,
-      addressId: '',
       addressTag: '',
       cityCode: '',
       cityName: '',
-      countryCode: '',
-      countryName: '',
       detailAddress: '',
       districtCode: '',
       districtName: '',
@@ -48,9 +44,6 @@ Page({
       phone: '',
       provinceCode: '',
       provinceName: '',
-      isEdit: false,
-      isOrderDetail: false,
-      isOrderSure: false,
     },
     areaData: areaData,
     labels: labelsOptions,
@@ -68,6 +61,17 @@ Page({
     const {
       id
     } = options;
+
+    // 注册 eventChannel 监听，接收从微信导入的地址数据
+    const eventChannel = this.getOpenerEventChannel();
+    if (eventChannel) {
+      eventChannel.on('onWeixinAddressPassed', (weixinAddress) => {
+        console.log('收到微信地址数据:', weixinAddress);
+        this.getWeixinAddress({
+          detail: weixinAddress
+        });
+      });
+    }
 
     this.init(id);
   },
@@ -89,6 +93,7 @@ Page({
     }
   },
 
+  //编辑地址进入，请求服务器填充地址
   getAddressDetail(id) {
     console.log("开始获取用户地址详情")
     wx.request({
@@ -161,6 +166,7 @@ Page({
     //   });
     // });
   },
+
   onInputValue(e) {
     const {
       item
@@ -209,12 +215,14 @@ Page({
       );
     }
   },
+
   onPickArea() {
     console.log("onPickArea")
     this.setData({
       areaPickerVisible: true
     });
   },
+
   onPickLabels(e) {
     const {
       item
@@ -240,11 +248,13 @@ Page({
     });
     this.triggerEvent('triggerUpdateValue', payload);
   },
+
   addLabels() {
     this.setData({
       visible: true,
     });
   },
+
   confirmHandle() {
     const {
       labels,
@@ -259,12 +269,14 @@ Page({
       labelValue: '',
     });
   },
+
   cancelHandle() {
     this.setData({
       visible: false,
       labelValue: '',
     });
   },
+
   onCheckDefaultAddress({
     detail
   }) {
@@ -275,7 +287,7 @@ Page({
       'locationState.isDefault': value,
     });
   },
-
+  //验证输入合法性
   onVerifyInputLegal() {
     console.log("验证输入合法性")
     const {
@@ -389,7 +401,6 @@ Page({
     });
   },
 
-
   //点击选位置
   onSearchAddress() {
     console.log("get wx address onSearchAddress")
@@ -472,6 +483,48 @@ Page({
     });
   },
 
+  //接收到微信地址后处理
+  getWeixinAddress(e) {
+    console.log("接收到微信地址后处理getWeixinAddress")
+    const {
+      locationState
+    } = this.data;
+    console.log('eventChannel 传入数据:', e)
+    const weixinAddress = e.detail;
+    console.log('接收到微信地址后处理getWeixinAddress', weixinAddress);
+    const convertdata = {
+      id: "",
+      name: weixinAddress.name,
+      phone: weixinAddress.phone,
+      cityCode: weixinAddress.cityCode,
+      cityName: weixinAddress.cityName,
+      countryCode: weixinAddress.countryCode,
+      countryName: weixinAddress.countryName,
+      districtCode: weixinAddress.districtCode,
+      districtName: weixinAddress.districtName,
+      detailAddress: weixinAddress.detailAddress,
+      provinceCode: weixinAddress.provinceCode,
+      provinceName: weixinAddress.provinceName,
+      isDefault: false,
+    }
+    // 延迟处理
+    this.setData({
+      locationState: convertdata
+    }, () => {
+      const {
+        isLegal,
+        tips
+      } = this.onVerifyInputLegal();
+      console.log("验证结果isLegal" + isLegal)
+      console.log("验证结果tips" + tips)
+      this.setData({
+        submitActive: isLegal,
+      });
+      this.privateData.verifyTips = tips;
+    })
+
+  },
+
   //提交地址
   formSubmit() {
     const {
@@ -518,30 +571,5 @@ Page({
     });
   },
 
-  //点击获取微信地址
-  getWeixinAddress(e) {
-    console.log("get wx address")
-    const {
-      locationState
-    } = this.data;
-    console.log(e)
-    const weixinAddress = e.detail;
-    this.setData({
-        locationState: {
-          ...locationState,
-          ...weixinAddress
-        },
-      },
-      () => {
-        const {
-          isLegal,
-          tips
-        } = this.onVerifyInputLegal();
-        this.setData({
-          submitActive: isLegal,
-        });
-        this.privateData.verifyTips = tips;
-      },
-    );
-  },
+
 });

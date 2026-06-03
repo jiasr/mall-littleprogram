@@ -1,13 +1,13 @@
 <view class="address-detail">
   <view class="divider-line" />
-  <t-location
+  <!-- <t-location
     title="获取微信收获地址"
     isCustomStyle
     t-class="address-detail-wx-location"
     bind:change="getWeixinAddress"
   >
     <t-icon class="address-detail-wx-arrow" name="arrow_forward" prefix="wr" color="#bbb" size="32rpx" />
-  </t-location>
+  </t-location> -->
   <view class="divider-line" />
   <view class="form-address">
     <form class="form-content">

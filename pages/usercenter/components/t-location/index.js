@@ -55,15 +55,21 @@ Component({
               userName,
               telNumber
             } = options;
-
-            if (!phoneRegCheck(telNumber)) {
-              Toast({
-                context: this,
-                selector: '#t-toast',
-                message: '请填写正确的手机号',
-              });
-              return;
-            }
+            console.log("options:" + options)
+            console.log("options:" + provinceName)
+            console.log("options:" + cityName)
+            console.log("options:" + countyName)
+            console.log("options:" + detailInfo)
+            console.log("options:" + userName)
+            console.log("options:" + telNumber)
+            // if (!phoneRegCheck(telNumber)) {
+            //   Toast({
+            //     context: this,
+            //     selector: '#t-toast',
+            //     message: '请填写正确的手机号',
+            //   });
+            //   return;
+            // }
 
             const target = {
               name: userName,
@@ -78,39 +84,41 @@ Component({
               isOrderSure: this.properties.isOrderSure,
             };
 
+            // 解析省市区 code，失败时降级：code 置空但基础字段仍然传递
+            let provinceCode = '';
+            let cityCode = '';
+            let districtCode = '';
             try {
-              const {
-                provinceCode,
-                cityCode,
-                districtCode
-              } = await addressParse(provinceName, cityName, countyName);
-
-              const params = Object.assign(target, {
-                provinceCode,
-                cityCode,
-                districtCode,
-              });
-              if (this.properties.isOrderSure) {
-                this.onHandleSubmit(params);
-              } else if (this.properties.navigateUrl != '') {
-                const {
-                  navigateEvent
-                } = this.properties;
-                this.triggerEvent('navigate');
-                wx.navigateTo({
-                  url: this.properties.navigateUrl,
-                  success: function (res) {
-                    res.eventChannel.emit(navigateEvent, params);
-                  },
-                });
-              } else {
-                this.triggerEvent('change', params);
-              }
+              const result = await addressParse(provinceName, cityName, countyName);
+              provinceCode = result.provinceCode;
+              cityCode = result.cityCode;
+              districtCode = result.districtCode;
             } catch (error) {
-              wx.showToast({
-                title: '地址解析出错，请稍后再试',
-                icon: 'none'
+              console.warn('地址 code 解析失败，将使用空 code 传递', error);
+            }
+
+            const params = Object.assign(target, {
+              provinceCode,
+              cityCode,
+              districtCode,
+            });
+            console.log('微信地址最终参数:', params);
+
+            if (this.properties.isOrderSure) {
+              this.onHandleSubmit(params);
+            } else if (this.properties.navigateUrl != '') {
+              const {
+                navigateEvent
+              } = this.properties;
+              this.triggerEvent('navigate');
+              wx.navigateTo({
+                url: this.properties.navigateUrl,
+                success: function (res) {
+                  res.eventChannel.emit(navigateEvent, params);
+                },
               });
+            } else {
+              this.triggerEvent('change', params);
             }
           },
           fail(err) {
