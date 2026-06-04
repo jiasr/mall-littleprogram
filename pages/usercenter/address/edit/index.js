@@ -424,7 +424,7 @@ Page({
             }) => {
               // 剩余部分作为详细地址
               const detailPrefix = provinceName + cityName + districtName;
-              const detailAddress = res.address.substring(detailPrefix.length).trim();
+              const detailAddress = res.address.substring(detailPrefix.length).trim() + res.name;
               this.setData({
                 'locationState.provinceName': provinceName,
                 'locationState.provinceCode': provinceCode,
