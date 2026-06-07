@@ -42,6 +42,10 @@
         "text": "首页"
       },
       {
+        "pagePath": "pages/goods/category/index",
+        "text": "分类"
+      },
+      {
         "pagePath": "pages/cart/index",
         "text": "购物车11"
       },
