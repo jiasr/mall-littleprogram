@@ -96,10 +96,20 @@ Page({
         sort: sortType,
         sortType: sortType === 2 ? sortOrder : (sortTypeMap[sortType] || '0'),
       });
-      const newList = (res.spuList || []).map(item => ({
-        ...item,
-        price: item.price != null ? ((item.price / 100).toFixed(2)) : '0.00',
-      }));
+      const newList = (res.spuList || []).map(item => {
+        const skuList = (item.skuList || []).map(sku => ({
+          ...sku,
+          price: sku.price != null ? ((sku.price / 100).toFixed(2)) : '0.00',
+          specLabel: (sku.specInfo || []).map(s => s.specValues || '').join('/'),
+        }));
+        return {
+          ...item,
+          price: item.price != null ? ((item.price / 100).toFixed(2)) : '0.00',
+          originPrice: item.originPrice != null ? ((item.originPrice / 100).toFixed(2)) : '',
+          skuList,
+          selectedSkuIndex: skuList.length === 1 ? 0 : -1, // 单 SKU 自动选中
+        };
+      });
       this.setData({
         goodsList: pageNum === 1 ? newList : [...goodsList, ...newList],
         hasMore: newList.length >= pageSize,
@@ -160,10 +170,30 @@ Page({
     wx.navigateTo({ url: `/pages/goods/details/index?spuId=${spuId}` });
   },
 
+  // ====== 选中 SKU ======
+  onSkuSelect(e) {
+    const { spuid, skuindex } = e.currentTarget.dataset;
+    const idx = parseInt(skuindex);
+    const goodsList = this.data.goodsList.map(item => {
+      if (item.spuId === spuid) {
+        return { ...item, selectedSkuIndex: item.selectedSkuIndex === idx ? -1 : idx };
+      }
+      return item;
+    });
+    this.setData({ goodsList });
+  },
+
   // ====== 加购按钮 ======
   onAddCart(e) {
     const spuId = e.currentTarget.dataset.spuid;
-    wx.showToast({ title: '已加入购物车', icon: 'success', duration: 1500 });
+    const item = this.data.goodsList.find(g => g.spuId === spuId);
+    if (!item || item.selectedSkuIndex < 0) {
+      wx.showToast({ title: '请先选择规格', icon: 'none' });
+      return;
+    }
+    const sku = item.skuList[item.selectedSkuIndex];
+    // TODO: 调用购物车接口
+    wx.showToast({ title: `已加购: ${sku.specLabel}`, icon: 'success', duration: 1500 });
   },
 
   // ====== 弹窗 ======

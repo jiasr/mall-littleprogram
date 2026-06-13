@@ -1,9 +1,14 @@
 import { get } from '../../utils/request';
 
 export function getGoodsDetailsCommentsCount(spuId = '') {
-  return get('/v1/goods/comments/count', { spuId });
+  // TODO: 后端评论接口未就绪，暂时返回空数据
+  return Promise.resolve({
+    badCount: 0, commentCount: 0, goodCount: 0,
+    goodRate: 100, hasImageCount: 0, middleCount: 0,
+  });
 }
 
 export function getGoodsDetailsCommentList(spuId = '') {
-  return get('/v1/goods/comments/list', { spuId });
+  // TODO: 后端评论接口未就绪，暂时返回空数据
+  return Promise.resolve({ homePageComments: [] });
 }

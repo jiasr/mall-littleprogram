@@ -315,6 +315,46 @@ page {
   margin-bottom: 6rpx;
 }
 
+/* SKU 规格选择条 */
+.sku-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
+  margin-bottom: 8rpx;
+}
+
+.sku-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8rpx;
+  padding: 6rpx 16rpx;
+  background: #F5F6F7;
+  border-radius: 8rpx;
+  border: 2rpx solid transparent;
+  transition: all 0.2s;
+}
+
+.sku-chip--active {
+  background: #E8F8F0;
+  border-color: #1BBE6B;
+}
+
+.sku-label {
+  font-size: 22rpx;
+  color: #666;
+}
+
+.sku-chip--active .sku-label {
+  color: #1BBE6B;
+  font-weight: 500;
+}
+
+.sku-price {
+  font-size: 24rpx;
+  color: #FF3B30;
+  font-weight: 600;
+}
+
 /* 底部价格+按钮 */
 .goods-bottom {
   display: flex;
@@ -352,6 +392,11 @@ page {
   background: linear-gradient(135deg, #FF8C00, #FF5A00);
   border-radius: 24rpx;
   font-weight: 600;
+}
+
+.goods-btn--disabled {
+  background: #ccc;
+  opacity: 0.5;
 }
 
 /* ====== 公共底部 ====== */
