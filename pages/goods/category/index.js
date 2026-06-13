@@ -80,7 +80,7 @@ Page({
     }
     const { pageNum, pageSize, goodsList, sortType, sortOrder, activeChip, chipList } = this.data;
 
-    // 如果选了非"全部"的三级分类，用 chip id 作为 categoryId
+    // 选中三级分类用 chip id，否则用二级分类 id
     let categoryId = subItem.id;
     if (activeChip > 0 && chipList[activeChip - 1]) {
       categoryId = chipList[activeChip - 1].id;

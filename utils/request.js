@@ -9,6 +9,9 @@ function request(method, path, data = {}) {
   const app = getApp();
   const baseUrl = app ? app.globalData.baseUrl : 'http://localhost:8560';
   const token = app ? app.globalData.token || '' : '';
+  const fullUrl = baseUrl + path;
+
+  console.log(`[request] ${method} ${fullUrl}`, JSON.stringify(data));
 
   return new Promise((resolve, reject) => {
     wx.request({
