@@ -1,8 +1,132 @@
-<view class="wrap">
-  <goods-category
-    level="{{3}}"
-    custom-class="goods-category-class"
-    category="{{list}}"
-    bind:changeCategory="onChange"
-  />
+<view class="category-page">
+  <!-- 一级分类横滑栏 -->
+  <scroll-view class="top-bar" scroll-x scroll-into-view="{{scrollToId}}" scroll-with-animation enhanced show-scrollbar="{{false}}">
+    <view
+      wx:for="{{topList}}"
+      wx:key="index"
+      id="top-{{index}}"
+      class="top-item {{activeTop === index ? 'top-item--active' : ''}}"
+      data-index="{{index}}"
+      bindtap="onTopTap"
+    >
+      <t-image
+        src="{{item.thumbnail || ''}}"
+        t-class="top-icon"
+        mode="aspectFill"
+        wx:if="{{item.thumbnail}}"
+      />
+      <view class="top-icon-placeholder" wx:else>
+        <text class="top-icon-text">{{item.name.slice(0, 1)}}</text>
+      </view>
+      <text class="top-label">{{item.name}}</text>
+    </view>
+    <view class="top-more" bindtap="openPopup">
+      <view class="top-more-icon">⌄</view>
+    </view>
+  </scroll-view>
+
+  <!-- 主体内容区：左侧二级分类 + 右侧(排序栏+三级chips+商品列表) -->
+  <view class="bottom-area">
+    <view class="left-side">
+      <!-- 二级分类列表 -->
+      <scroll-view class="left-cats" scroll-y enhanced show-scrollbar="{{false}}">
+        <view
+          wx:for="{{subList}}"
+          wx:key="index"
+          class="left-item {{activeSub === index ? 'left-item--active' : ''}}"
+          data-index="{{index}}"
+          bindtap="onSubTap"
+        >{{item.name}}</view>
+      </scroll-view>
+    </view>
+
+    <!-- 右侧商品区域 -->
+    <view class="right-side">
+      <!-- 排序栏 -->
+      <view class="sort-bar">
+        <view class="sort-item {{sortType === 0 ? 'sort-item--active' : ''}}" data-sort="0" bindtap="onSortTap">销量</view>
+        <view class="sort-item {{sortType === 1 ? 'sort-item--active' : ''}}" data-sort="1" bindtap="onSortTap">折扣</view>
+        <view class="sort-item {{sortType === 2 ? 'sort-item--active' : ''}}" data-sort="2" bindtap="onSortTap">
+          价格<text wx:if="{{sortType === 2}}">{{sortOrder === 'asc' ? '↑' : '↓'}}</text>
+        </view>
+      </view>
+      <!-- 三级分类 chips -->
+      <scroll-view class="sub-chips" scroll-x enhanced show-scrollbar="{{false}}" wx:if="{{chipList.length > 0}}">
+        <view class="chip {{activeChip === 0 ? 'chip--active' : ''}}" data-chip="0" bindtap="onChipTap">全部</view>
+        <view
+          wx:for="{{chipList}}"
+          wx:key="id"
+          class="chip {{activeChip === index + 1 ? 'chip--active' : ''}}"
+          data-chip="{{index + 1}}"
+          bindtap="onChipTap"
+        >{{item.name}}</view>
+      </scroll-view>
+      <!-- 商品卡片列表 -->
+      <scroll-view class="goods-area" scroll-y bindscrolltolower="onLoadMore">
+        <view class="goods-list" wx:if="{{goodsList.length > 0}}">
+          <view
+            wx:for="{{goodsList}}"
+            wx:key="spuId"
+            class="goods-card"
+            data-spuid="{{item.spuId}}"
+            bindtap="onGoodsTap"
+          >
+            <t-image src="{{item.thumb}}" t-class="goods-img" mode="aspectFill" />
+            <view class="goods-info">
+              <view class="goods-tags" wx:if="{{item.tags && item.tags.length > 0}}">
+                <text wx:for="{{item.tags}}" wx:for-item="t" wx:key="*this" class="goods-tag">{{t}}</text>
+              </view>
+              <view class="goods-title">{{item.title}}</view>
+              <view class="goods-spec" wx:if="{{item.subtitle}}">{{item.subtitle}}</view>
+              <view class="goods-sellpoints" wx:if="{{item.sellPoints && item.sellPoints.length > 0}}">
+                <text wx:for="{{item.sellPoints}}" wx:for-item="sp" wx:key="*this" class="sellpoint">{{sp}}</text>
+              </view>
+              <view class="goods-review" wx:if="{{item.salesCount}}">
+                <text>👍 {{item.salesCount}}+好评</text>
+              </view>
+              <view class="goods-bottom">
+                <view class="goods-price-row">
+                  <text class="goods-price">¥{{item.price}}</text>
+                  <text class="goods-origin" wx:if="{{item.originPrice && item.originPrice !== item.price}}">¥{{item.originPrice}}</text>
+                </view>
+                <view class="goods-btn" catchtap="onAddCart" data-spuid="{{item.spuId}}">抢</view>
+              </view>
+            </view>
+          </view>
+        </view>
+        <view class="load-more" wx:if="{{loading}}">加载中...</view>
+        <view class="load-more" wx:if="{{!loading && !hasMore && goodsList.length > 0}}">— 没有更多了 —</view>
+        <view class="empty-box" wx:if="{{!loading && goodsList.length === 0}}">
+          <text class="empty-text">暂无商品</text>
+        </view>
+      </scroll-view>
+    </view>
+  </view>
+
+  <!-- 全部分类弹窗 -->
+  <t-popup visible="{{popupVisible}}" placement="top" bind:visible-change="onPopupClose">
+    <view class="popup-wrap">
+      <view class="popup-title">全部分类</view>
+      <view class="popup-grid">
+        <view
+          wx:for="{{topList}}"
+          wx:key="index"
+          class="popup-item {{activeTop === index ? 'popup-item--active' : ''}}"
+          data-index="{{index}}"
+          bindtap="onPopupSelect"
+        >
+          <t-image
+            src="{{item.thumbnail || ''}}"
+            t-class="popup-icon"
+            mode="aspectFill"
+            wx:if="{{item.thumbnail}}"
+          />
+          <view class="popup-icon-placeholder" wx:else>
+            <text class="popup-icon-text">{{item.name.slice(0, 1)}}</text>
+          </view>
+          <text class="popup-label">{{item.name}}</text>
+        </view>
+      </view>
+    </view>
+  </t-popup>
 </view>

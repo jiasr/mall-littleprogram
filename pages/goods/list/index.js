@@ -49,6 +49,9 @@ Page({
       keyword: keywords,
     };
 
+    if (this.categoryId) {
+      params.categoryId = this.categoryId;
+    }
     if (sorts) {
       params.sort = 1;
       params.sortType = sorts === 'desc' ? 1 : 0;
