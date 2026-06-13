@@ -12,7 +12,6 @@ export function fetchHome() {
       thumb: item.thumb,
       title: item.title,
       price: item.price,
-      originPrice: item.originPrice,
       tags: item.tags || [],
     })),
   }));

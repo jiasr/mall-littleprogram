@@ -33,15 +33,8 @@ function rpx2px(rpx, screenWidth) {
 function imageMogr(url, options) {
   if (!isString(url) || !url) return '';
 
-  if (
-    url.indexOf('qlogo.cn') !== -1 ||
-    url.indexOf('wxfile://') === 0 ||
-    url.indexOf('http://tmp/wx') === 0 ||
-    url.indexOf('imageMogr2') !== -1
-  ) {
-    //qlogo.cn域名或者本地图片不做转换
-    return url;
-  } //强制转https
+  // 非腾讯云 COS 环境，跳过 imageMogr2 处理
+  return url; //强制转https
 
   if (url.indexOf('http://') === 0) {
     url = url.replace('http://', 'https://');
@@ -131,7 +124,7 @@ function getSrc(options) {
     });
   }
 
-  return '';
+  return options.src;
 }
 
 module.exports = {

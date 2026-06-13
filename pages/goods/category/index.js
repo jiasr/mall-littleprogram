@@ -105,7 +105,6 @@ Page({
         return {
           ...item,
           price: item.price != null ? ((item.price / 100).toFixed(2)) : '0.00',
-          originPrice: item.originPrice != null ? ((item.originPrice / 100).toFixed(2)) : '',
           skuList,
           selectedSkuIndex: skuList.length === 1 ? 0 : -1, // 单 SKU 自动选中
         };

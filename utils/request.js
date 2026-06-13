@@ -25,6 +25,7 @@ function request(method, path, data = {}) {
       },
       success(res) {
         const resp = res.data;
+        console.log(`[response] ${method} ${path}`, JSON.stringify(resp));
         // 后端统一响应格式: { flag, resData, errCode, errMessage }
         if (resp && resp.flag !== undefined) {
           if (resp.flag === true) {

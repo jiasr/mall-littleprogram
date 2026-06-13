@@ -95,7 +95,6 @@
                 <view class="goods-price-row">
                   <text class="goods-price" wx:if="{{item.selectedSkuIndex >= 0}}">¥{{item.skuList[item.selectedSkuIndex].price}}</text>
                   <text class="goods-price" wx:else>¥{{item.price}}起</text>
-                  <text class="goods-origin" wx:if="{{item.originPrice}}">¥{{item.originPrice}}</text>
                 </view>
                 <view class="goods-btn {{item.selectedSkuIndex < 0 && item.skuList.length > 0 ? 'goods-btn--disabled' : ''}}" catchtap="onAddCart" data-spuid="{{item.spuId}}">抢</view>
               </view>

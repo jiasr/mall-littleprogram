@@ -374,12 +374,6 @@ page {
   font-weight: 700;
 }
 
-.goods-origin {
-  font-size: 22rpx;
-  color: #B0B0B0;
-  text-decoration: line-through;
-}
-
 .goods-btn {
   flex-shrink: 0;
   width: 56rpx;

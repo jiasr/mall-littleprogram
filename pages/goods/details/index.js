@@ -77,7 +77,6 @@ Page({
     outOperateStatus: false, // 是否外层加入购物车
     operateType: 0,
     selectSkuSellsPrice: 0,
-    maxLinePrice: 0,
     minSalePrice: 0,
     maxSalePrice: 0,
     list: [],
@@ -307,17 +306,22 @@ Page({
     });
   },
 
-  getDetail(spuId) {
-    Promise.all([fetchGood(spuId), fetchActivityList()]).then((res) => {
+  async getDetail(spuId) {
+    try {
+      const res = await Promise.all([fetchGood(spuId), fetchActivityList()]);
       const [details, activityList] = res;
+      console.log('[detail] 接口返回:', JSON.stringify(details));
+      if (!details || !details.title) {
+        console.error('[detail] 接口返回数据异常:', details);
+        return;
+      }
       const skuArray = [];
       const {
-        skuList,
+        skuList = [],
         primaryImage,
         isPutOnSale,
         minSalePrice,
         maxSalePrice,
-        maxLinePrice,
         soldNum,
       } = details;
       skuList.forEach((item) => {
@@ -334,12 +338,15 @@ Page({
           label: '满100元减99.9元',
         });
       });
+      // 过滤掉视频文件，仅图片用于轮播
+      const videoExt = /\.(mp4|mov|avi|mkv|webm)($|\?)/i;
+      const imageList = (details.images || []).filter(u => !videoExt.test(u));
       this.setData({
         details,
         activityList,
-        isStock: details.spuStockQuantity > 0,
+        imageList,
+        isStock: (details.spuStockQuantity || 0) > 0,
         maxSalePrice: maxSalePrice ? parseInt(maxSalePrice) : 0,
-        maxLinePrice: maxLinePrice ? parseInt(maxLinePrice) : 0,
         minSalePrice: minSalePrice ? parseInt(minSalePrice) : 0,
         list: promotionArray,
         skuArray: skuArray,
@@ -347,7 +354,9 @@ Page({
         soldout: isPutOnSale === 0,
         soldNum,
       });
-    });
+    } catch (err) {
+      console.error('[detail] 加载商品详情失败:', err);
+    }
   },
 
   async getCommentsList() {
