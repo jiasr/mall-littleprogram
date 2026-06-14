@@ -4,7 +4,7 @@ export default [{
     url: 'pages/home/home',
   },
   {
-    icon: 'sort',
+    icon: 'app',
     text: '分类',
     url: 'pages/goods/category/index',
   },
@@ -14,7 +14,7 @@ export default [{
     url: 'pages/cart/index',
   },
   {
-    icon: 'person',
+    icon: 'user',
     text: '我的',
     url: 'pages/usercenter/index',
   },

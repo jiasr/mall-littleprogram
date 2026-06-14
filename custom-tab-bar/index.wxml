@@ -10,7 +10,10 @@
 	 wx:key="index"
 	>
 		<view class="custom-tab-bar-wrapper">
-			<t-icon prefix="wr" name="{{item.icon}}" size="48rpx" />
+			<view class="tab-icon-wrap">
+				<t-icon class="tab-icon" name="{{item.icon}}" size="48rpx" />
+				<view wx:if="{{index === 2 && cartCount > 0}}" class="cart-badge">{{cartCount > 99 ? '99+' : cartCount}}</view>
+			</view>
 			<view class="text">{{ item.text }}</view>
 		</view>
 	</t-tab-bar-item>

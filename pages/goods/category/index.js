@@ -1,4 +1,4 @@
-import { get } from '../../../utils/request';
+import { get, post } from '../../../utils/request';
 
 Page({
   data: {
@@ -168,6 +168,7 @@ Page({
     const spuId = e.currentTarget.dataset.spuid;
     const item = this.data.goodsList.find(g => g.spuId === spuId);
     if (!item || !item.skuList) return;
+    this._currentSpuId = spuId;
     // 构建 specList（从 skuList 提取唯一规格）
     const specMap = {};
     item.skuList.forEach(sku => {
@@ -219,46 +220,90 @@ Page({
   onSpecChange(e) {
     const { selectedSku, isAllSelectedSku } = e.detail || {};
     if (isAllSelectedSku && selectedSku) {
-      // 根据选中的 specId→specValueId 匹配 SKU
+      this._selectedSku = selectedSku;
       const match = this.data.specData.skuList.find(sku =>
         (sku.specInfo || []).every(si => selectedSku[si.specId] === si.specValueId)
       );
       if (match) {
-        // skuList 中的 quantity 存的是 stock，需要另外存 price
-        // 从原始商品数据中获取 price
-        const item = this.data.goodsList.find(g => {
-          const sl = g.skuList || [];
-          return sl.some(s => s.skuId === match.skuId);
-        });
+        const item = this.data.goodsList.find(g => (g.skuList || []).some(s => s.skuId === match.skuId));
         if (item) {
           const sku = item.skuList.find(s => s.skuId === match.skuId);
           if (sku) {
-            this.setData({
-              'specData.selectedPrice': (sku.price / 100).toFixed(2),
-            });
+            this.setData({ 'specData.selectedPrice': (sku.price / 100).toFixed(2) });
           }
         }
       }
     } else {
+      this._selectedSku = null;
       this.setData({ 'specData.selectedPrice': '' });
     }
   },
 
-  onSpecConfirm(e) {
-    const { skuId, buyNum } = e.detail || {};
-    wx.showToast({ title: `已加入购物车`, icon: 'success', duration: 1500 });
-    this.setData({ specPopupShow: false });
+  onSpecConfirm() {
+    this.doAddCart();
   },
 
-  onSpecAddCart(e) {
-    const { skuId, buyNum } = e.detail || {};
-    wx.showToast({ title: `已加入购物车`, icon: 'success', duration: 1500 });
+  onSpecAddCart() {
+    this.doAddCart();
+  },
+
+  async doAddCart() {
+    const spuId = this._currentSpuId;
+    const selectedSku = this._selectedSku;
+    if (!spuId || !selectedSku) {
+      wx.showToast({ title: '请先选择完整规格', icon: 'none' });
+      return;
+    }
+    const match = this.data.specData.skuList.find(sku =>
+      (sku.specInfo || []).every(si => selectedSku[si.specId] === si.specValueId)
+    );
+    if (!match) {
+      wx.showToast({ title: '规格匹配失败', icon: 'none' });
+      return;
+    }
+    try {
+      const res = await post('/v1/cart/add', { spuId, skuId: match.skuId, quantity: 1 });
+      if (res && res.success) {
+        wx.showToast({ title: '已加入购物车', icon: 'success', duration: 1500 });
+        this.updateCartBadge(res.cartCount);
+      } else {
+        wx.showToast({ title: res?.message || '加购失败', icon: 'none' });
+      }
+    } catch (e) {
+      wx.showToast({ title: '加购失败', icon: 'none' });
+    }
     this.setData({ specPopupShow: false });
   },
 
   // ====== 加购按钮（单规格） ======
-  onAddCart(e) {
-    wx.showToast({ title: '已加入购物车', icon: 'success', duration: 1500 });
+  async onAddCart(e) {
+    const spuId = e.currentTarget.dataset.spuid;
+    const item = this.data.goodsList.find(g => g.spuId === spuId);
+    const skuList = item?.skuList || [];
+    if (skuList.length === 0) return;
+    const skuId = skuList[0].skuId;
+    try {
+      const res = await post('/v1/cart/add', { spuId, skuId, quantity: 1 });
+      if (res && res.success) {
+        wx.showToast({ title: '已加入购物车', icon: 'success', duration: 1500 });
+        this.updateCartBadge(res.cartCount);
+      } else {
+        wx.showToast({ title: res?.message || '加购失败', icon: 'none' });
+      }
+    } catch (e) {
+      wx.showToast({ title: '加购失败', icon: 'none' });
+    }
+  },
+
+  updateCartBadge(count) {
+    var app = getApp();
+    app.globalData.cartCount = typeof count === 'number' ? count : (app.globalData.cartCount || 0);
+    if (typeof this.getTabBar === 'function') {
+      var tabBar = this.getTabBar();
+      if (tabBar && tabBar.updateCartBadge) {
+        tabBar.updateCartBadge();
+      }
+    }
   },
 
   // ====== 弹窗 ======

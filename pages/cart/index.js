@@ -1,293 +1,196 @@
 import Dialog from 'tdesign-miniprogram/dialog/index';
 import Toast from 'tdesign-miniprogram/toast/index';
-import { fetchCartGroupData } from '../../services/cart/cart';
+import { fetchCartList, updateCart, deleteCart, clearCart } from '../../services/cart/cart';
 
 Page({
   data: {
-    cartGroupData: null,
+    cartGroupData: { storeGoods: [], invalidGoodItems: [], isNotEmpty: false, totalAmount: 0 },
   },
 
-  // 调用自定义tabbar的init函数，使页面与tabbar激活状态保持一致
   onShow() {
     this.getTabBar().init();
+    this.refreshData();
   },
 
   onLoad() {
     this.refreshData();
   },
 
-  refreshData() {
-    this.getCartGroupData().then((res) => {
-      let isEmpty = true;
-      const cartGroupData = res.data;
-      // 一些组件中需要的字段可能接口并没有返回，或者返回的数据结构与预期不一致，需要在此先对数据做一些处理
-      // 统计门店下加购的商品是否全选、是否存在缺货/无货
-      for (const store of cartGroupData.storeGoods) {
-        store.isSelected = true; // 该门店已加购商品是否全选
-        store.storeStockShortage = false; // 该门店已加购商品是否存在库存不足
-        if (!store.shortageGoodsList) {
-          store.shortageGoodsList = []; // 该门店已加购商品如果库存为0需单独分组
-        }
-        for (const activity of store.promotionGoodsList) {
-          activity.goodsPromotionList = activity.goodsPromotionList.filter((goods) => {
-            goods.originPrice = undefined;
+  async refreshData() {
+    try {
+      const data = await fetchCartList();
+      if (!data) return;
 
-            // 统计是否有加购数大于库存数的商品
-            if (goods.quantity > goods.stockQuantity) {
-              store.storeStockShortage = true;
-            }
-            // 统计是否全选
-            if (!goods.isSelected) {
-              store.isSelected = false;
-            }
-            // 库存为0（无货）的商品单独分组
-            if (goods.stockQuantity > 0) {
-              return true;
-            }
-            store.shortageGoodsList.push(goods);
-            return false;
-          });
+      const validItems = data.validItems || [];
+      const invalidItems = data.invalidItems || [];
 
-          if (activity.goodsPromotionList.length > 0) {
-            isEmpty = false;
-          }
-        }
-        if (store.shortageGoodsList.length > 0) {
-          isEmpty = false;
-        }
-      }
-      cartGroupData.invalidGoodItems = cartGroupData.invalidGoodItems.map((goods) => {
-        goods.originPrice = undefined;
-        return goods;
-      });
-      cartGroupData.isNotEmpty = !isEmpty;
+      // 适配现有 UI 组件的数据格式
+      const cartGroupData = {
+        storeGoods: [{
+          storeId: '1000',
+          storeName: '',
+          isSelected: validItems.every(g => g.isSelected),
+          storeStockShortage: false,
+          promotionGoodsList: [{
+            goodsPromotionList: validItems.map(g => ({
+              spuId: g.spuId,
+              skuId: g.skuId,
+              title: g.title,
+              thumb: g.thumb,
+              price: g.price,
+              quantity: g.quantity,
+              stockQuantity: g.stock,
+              isSelected: g.isSelected,
+              specInfo: g.specInfo || [],
+            })),
+            shortageGoodsList: [],
+          }],
+        }],
+        invalidGoodItems: invalidItems.map(g => ({
+          spuId: g.spuId,
+          skuId: g.skuId,
+          title: g.title,
+          thumb: g.thumb,
+          price: g.price,
+          invalidReason: g.invalidReason || '已失效',
+        })),
+        isNotEmpty: validItems.length > 0 || invalidItems.length > 0,
+        isAllSelected: validItems.length > 0 && validItems.every(g => g.isSelected),
+        totalAmount: data.selectedPrice || 0,
+        selectedGoodsCount: data.selectedCount || 0,
+      };
+
       this.setData({ cartGroupData });
-    });
+      this.updateBadge(data);
+    } catch (err) {
+      console.error('加载购物车失败', err);
+    }
   },
 
-  findGoods(spuId, skuId) {
-    let currentStore;
-    let currentActivity;
-    let currentGoods;
-    const { storeGoods } = this.data.cartGroupData;
-    for (const store of storeGoods) {
-      for (const activity of store.promotionGoodsList) {
-        for (const goods of activity.goodsPromotionList) {
-          if (goods.spuId === spuId && goods.skuId === skuId) {
-            currentStore = store;
-            currentActivity = currentActivity;
-            currentGoods = goods;
-            return {
-              currentStore,
-              currentActivity,
-              currentGoods,
-            };
-          }
-        }
+  updateBadge(data) {
+    var app = getApp();
+    var count = 0;
+    if (data && data.validItems) {
+      for (var i = 0; i < data.validItems.length; i++) {
+        count += data.validItems[i].quantity || 0;
       }
     }
-    return {
-      currentStore,
-      currentActivity,
-      currentGoods,
-    };
-  },
-
-  // 注：实际场景时应该调用接口获取购物车数据
-  getCartGroupData() {
-    const { cartGroupData } = this.data;
-    if (!cartGroupData) {
-      return fetchCartGroupData();
-    }
-    return Promise.resolve({ data: cartGroupData });
+    app.globalData.cartCount = count;
+    if (app.updateCartBadge) app.updateCartBadge();
   },
 
   // 选择单个商品
-  // 注：实际场景时应该调用接口更改选中状态
-  selectGoodsService({ spuId, skuId, isSelected }) {
-    this.findGoods(spuId, skuId).currentGoods.isSelected = isSelected;
-    return Promise.resolve();
+  async selectGoodsService({ spuId, skuId, isSelected }) {
+    const item = this.findGoods(spuId, skuId);
+    if (!item) return;
+    try {
+      await updateCart(item.cartId, { isSelected });
+    } catch (e) {
+      console.error('更新选中状态失败', e);
+    }
   },
 
   // 全选门店
-  // 注：实际场景时应该调用接口更改选中状态
-  selectStoreService({ storeId, isSelected }) {
-    const currentStore = this.data.cartGroupData.storeGoods.find((s) => s.storeId === storeId);
-    currentStore.isSelected = isSelected;
-    currentStore.promotionGoodsList.forEach((activity) => {
-      activity.goodsPromotionList.forEach((goods) => {
-        goods.isSelected = isSelected;
-      });
-    });
-    return Promise.resolve();
+  async selectStoreService({ storeId, isSelected }) {
+    const items = this.data.cartGroupData?.storeGoods[0]?.promotionGoodsList[0]?.goodsPromotionList || [];
+    try {
+      for (const g of items) {
+        await updateCart(g.cartId, { isSelected });
+      }
+    } catch (e) {
+      console.error('全选失败', e);
+    }
   },
 
   // 加购数量变更
-  // 注：实际场景时应该调用接口
-  changeQuantityService({ spuId, skuId, quantity }) {
-    this.findGoods(spuId, skuId).currentGoods.quantity = quantity;
-    return Promise.resolve();
+  async changeQuantityService({ spuId, skuId, quantity }) {
+    const item = this.findGoods(spuId, skuId);
+    if (!item) return;
+    try {
+      await updateCart(item.cartId, { quantity });
+    } catch (e) {
+      console.error('更新数量失败', e);
+    }
   },
 
   // 删除加购商品
-  // 注：实际场景时应该调用接口
-  deleteGoodsService({ spuId, skuId }) {
-    function deleteGoods(group) {
-      for (const gindex in group) {
-        const goods = group[gindex];
-        if (goods.spuId === spuId && goods.skuId === skuId) {
-          group.splice(gindex, 1);
-          return gindex;
-        }
-      }
-      return -1;
+  async deleteGoodsService({ spuId, skuId }) {
+    const item = this.findGoods(spuId, skuId);
+    if (!item) return;
+    try {
+      await deleteCart(item.cartId);
+    } catch (e) {
+      console.error('删除失败', e);
     }
-    const { storeGoods, invalidGoodItems } = this.data.cartGroupData;
-    for (const store of storeGoods) {
-      for (const activity of store.promotionGoodsList) {
-        if (deleteGoods(activity.goodsPromotionList) > -1) {
-          return Promise.resolve();
-        }
-      }
-      if (deleteGoods(store.shortageGoodsList) > -1) {
-        return Promise.resolve();
-      }
-    }
-    if (deleteGoods(invalidGoodItems) > -1) {
-      return Promise.resolve();
-    }
-    return Promise.reject();
   },
 
   // 清空失效商品
-  // 注：实际场景时应该调用接口
-  clearInvalidGoodsService() {
-    this.data.cartGroupData.invalidGoodItems = [];
-    return Promise.resolve();
+  async clearInvalidGoodsService() {
+    try {
+      const invalid = this.data.cartGroupData?.invalidGoodItems || [];
+      if (invalid.length > 0) {
+        await deleteCart(invalid.map(g => g.cartId));
+      }
+    } catch (e) {
+      console.error('清空失效失败', e);
+    }
   },
 
+  findGoods(spuId, skuId) {
+    const items = this.data.cartGroupData?.storeGoods[0]?.promotionGoodsList[0]?.goodsPromotionList || [];
+    return items.find(g => g.spuId === spuId && g.skuId === skuId);
+  },
+
+  // ====== 事件处理 ======
+
   onGoodsSelect(e) {
-    const {
-      goods: { spuId, skuId },
-      isSelected,
-    } = e.detail;
-    const { currentGoods } = this.findGoods(spuId, skuId);
-    Toast({
-      context: this,
-      selector: '#t-toast',
-      message: `${isSelected ? '选择' : '取消'}"${
-        currentGoods.title.length > 5 ? `${currentGoods.title.slice(0, 5)}...` : currentGoods.title
-      }"`,
-      icon: '',
-    });
+    const { goods: { spuId, skuId }, isSelected } = e.detail;
     this.selectGoodsService({ spuId, skuId, isSelected }).then(() => this.refreshData());
   },
 
   onStoreSelect(e) {
-    const {
-      store: { storeId },
-      isSelected,
-    } = e.detail;
+    const { store: { storeId }, isSelected } = e.detail;
     this.selectStoreService({ storeId, isSelected }).then(() => this.refreshData());
   },
 
   onQuantityChange(e) {
-    const {
-      goods: { spuId, skuId },
-      quantity,
-    } = e.detail;
-    const { currentGoods } = this.findGoods(spuId, skuId);
-    const stockQuantity = currentGoods.stockQuantity > 0 ? currentGoods.stockQuantity : 0; // 避免后端返回的是-1
-    // 加购数量超过库存数量
-    if (quantity > stockQuantity) {
-      // 加购数量等于库存数量的情况下继续加购
-      if (currentGoods.quantity === stockQuantity && quantity - stockQuantity === 1) {
-        Toast({
-          context: this,
-          selector: '#t-toast',
-          message: '当前商品库存不足',
-        });
-        return;
-      }
-      Dialog.confirm({
-        title: '商品库存不足',
-        content: `当前商品库存不足，最大可购买数量为${stockQuantity}件`,
-        confirmBtn: '修改为最大可购买数量',
-        cancelBtn: '取消',
-      })
-        .then(() => {
-          this.changeQuantityService({
-            spuId,
-            skuId,
-            quantity: stockQuantity,
-          }).then(() => this.refreshData());
-        })
-        .catch(() => {});
-      return;
-    }
+    const { goods: { spuId, skuId }, quantity } = e.detail;
     this.changeQuantityService({ spuId, skuId, quantity }).then(() => this.refreshData());
   },
 
-  goCollect() {
-    /** 活动肯定有一个活动ID，用来获取活动banner，活动商品列表等 */
-    const promotionID = '123';
-    wx.navigateTo({
-      url: `/pages/promotion-detail/index?promotion_id=${promotionID}`,
-    });
-  },
-
-  goGoodsDetail(e) {
-    const { spuId, storeId } = e.detail.goods;
-    wx.navigateTo({
-      url: `/pages/goods/details/index?spuId=${spuId}&storeId=${storeId}`,
-    });
+  onGoodsDelete(e) {
+    const { goods: { spuId, skuId } } = e.detail;
+    Dialog.confirm({ content: '确认删除该商品吗?', confirmBtn: '确定' })
+      .then(() => this.deleteGoodsService({ spuId, skuId }))
+      .then(() => { Toast({ context: this, selector: '#t-toast', message: '删除成功' }); this.refreshData(); });
   },
 
   clearInvalidGoods() {
-    // 实际场景时应该调用接口清空失效商品
     this.clearInvalidGoodsService().then(() => this.refreshData());
   },
 
-  onGoodsDelete(e) {
-    const {
-      goods: { spuId, skuId },
-    } = e.detail;
-    Dialog.confirm({
-      content: '确认删除该商品吗?',
-      confirmBtn: '确定',
-      cancelBtn: '取消',
-    }).then(() => {
-      this.deleteGoodsService({ spuId, skuId }).then(() => {
-        Toast({ context: this, selector: '#t-toast', message: '商品删除成功' });
-        this.refreshData();
-      });
-    });
+  goGoodsDetail(e) {
+    const { spuId } = e.detail.goods;
+    wx.navigateTo({ url: `/pages/goods/details/index?spuId=${spuId}` });
   },
 
   onSelectAll(event) {
     const { isAllSelected } = event?.detail ?? {};
-    Toast({
-      context: this,
-      selector: '#t-toast',
-      message: `${isAllSelected ? '取消' : '点击'}了全选按钮`,
-    });
-    // 调用接口改变全选
+    const storeId = '1000';
+    this.selectStoreService({ storeId, isSelected: !isAllSelected }).then(() => this.refreshData());
   },
 
   onToSettle() {
-    const goodsRequestList = [];
-    this.data.cartGroupData.storeGoods.forEach((store) => {
-      store.promotionGoodsList.forEach((promotion) => {
-        promotion.goodsPromotionList.forEach((m) => {
-          if (m.isSelected == 1) {
-            goodsRequestList.push(m);
-          }
-        });
-      });
-    });
-    wx.setStorageSync('order.goodsRequestList', JSON.stringify(goodsRequestList));
+    const items = this.data.cartGroupData?.storeGoods[0]?.promotionGoodsList[0]?.goodsPromotionList || [];
+    const selected = items.filter(g => g.isSelected);
+    if (selected.length === 0) {
+      Toast({ context: this, selector: '#t-toast', message: '请选择商品' });
+      return;
+    }
+    wx.setStorageSync('order.goodsRequestList', JSON.stringify(selected));
     wx.navigateTo({ url: '/pages/order/order-confirm/index?type=cart' });
   },
+
   onGotoHome() {
     wx.switchTab({ url: '/pages/home/home' });
   },

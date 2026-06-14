@@ -7,3 +7,23 @@
 .custom-tab-bar-wrapper .text {
   font-size: 20rpx;
 }
+
+.tab-icon-wrap {
+  position: relative;
+  display: inline-flex;
+}
+
+.cart-badge {
+  position: absolute;
+  top: -12rpx;
+  right: -20rpx;
+  min-width: 28rpx;
+  height: 28rpx;
+  background: #FA550F;
+  color: #fff;
+  font-size: 18rpx;
+  line-height: 28rpx;
+  text-align: center;
+  border-radius: 14rpx;
+  padding: 0 6rpx;
+}
