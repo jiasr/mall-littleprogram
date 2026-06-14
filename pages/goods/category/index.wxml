@@ -133,6 +133,11 @@
     bind:closeSpecsPopup="onSpecPopupClose"
     bind:specsConfirm="onSpecConfirm"
     bind:addCart="onSpecAddCart"
+    bind:change="onSpecChange"
     isStock="{{true}}"
-  />
+  >
+    <view slot="goods-price" class="popup-sku__price">
+      <text class="popup-price">¥{{specData.selectedPrice || specData.minPrice || '0'}}</text>
+    </view>
+  </goods-specs-popup>
 </view>

@@ -178,15 +178,16 @@ Page({
         if (!specMap[key].values.includes(v)) specMap[key].values.push(v);
       });
     });
-    // 构建 specList
+    // 构建 specList（需要 specId 用于匹配选择）
     const specList = Object.values(specMap).map(s => ({
+      specId: s.title,
       title: s.title,
       specValueList: s.values.map(v => ({
         specValue: v,
         specValueId: s.title + '_' + v,
       })),
     }));
-    // 构建 skuList（specValueId 须与 specList 一致）
+    // 构建 skuList（specId/specValueId 须与 specList 一致）
     const skuList = item.skuList.map(sku => ({
       skuId: sku.skuId,
       quantity: sku.stock || 0,
@@ -196,6 +197,8 @@ Page({
         specValue: si.specValues || si.specValue || '',
       })),
     }));
+    // 最低价
+    const minPrice = Math.min(...item.skuList.map(s => s.price || Infinity));
     this.setData({
       specPopupShow: true,
       specData: {
@@ -203,12 +206,42 @@ Page({
         thumb: item.thumb || '',
         specList,
         skuList,
+        minPrice: (minPrice / 100) || 0,
+        selectedPrice: '',
       },
     });
   },
 
   onSpecPopupClose() {
     this.setData({ specPopupShow: false });
+  },
+
+  onSpecChange(e) {
+    const { selectedSku, isAllSelectedSku } = e.detail || {};
+    if (isAllSelectedSku && selectedSku) {
+      // 根据选中的 specId→specValueId 匹配 SKU
+      const match = this.data.specData.skuList.find(sku =>
+        (sku.specInfo || []).every(si => selectedSku[si.specId] === si.specValueId)
+      );
+      if (match) {
+        // skuList 中的 quantity 存的是 stock，需要另外存 price
+        // 从原始商品数据中获取 price
+        const item = this.data.goodsList.find(g => {
+          const sl = g.skuList || [];
+          return sl.some(s => s.skuId === match.skuId);
+        });
+        if (item) {
+          const sku = item.skuList.find(s => s.skuId === match.skuId);
+          if (sku) {
+            this.setData({
+              'specData.selectedPrice': (sku.price / 100).toFixed(2),
+            });
+          }
+        }
+      }
+    } else {
+      this.setData({ 'specData.selectedPrice': '' });
+    }
   },
 
   onSpecConfirm(e) {

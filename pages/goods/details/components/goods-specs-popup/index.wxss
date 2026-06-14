@@ -243,6 +243,8 @@
 }
 
 .popup-sku-actions {
+  display: flex;
+  justify-content: space-between;
   font-size: 32rpx;
   height: 80rpx;
   text-align: center;

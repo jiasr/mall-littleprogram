@@ -269,18 +269,20 @@ page {
   line-height: 1.5;
 }
 
-/* 标题 */
+/* 标题 -- 最多两行 */
 .goods-title {
   font-size: 28rpx;
   color: #222;
   font-weight: 500;
-  line-height: 1.4;
+  line-height: 1.5;
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
-  margin-bottom: 4rpx;
+  word-break: break-all;
+  margin-bottom: 6rpx;
+  min-height: 42rpx;
 }
 
 /* 规格 */
@@ -373,6 +375,15 @@ page {
 .empty-text {
   font-size: 26rpx;
   color: #B0B0B0;
+}
+
+.popup-sku__price {
+  margin-top: 8rpx;
+}
+.popup-price {
+  font-size: 36rpx;
+  color: #FA550F;
+  font-weight: 700;
 }
 
 /* ====== 全部分类弹窗 ====== */
