@@ -77,26 +77,12 @@
                 <text wx:for="{{item.tags}}" wx:for-item="t" wx:key="*this" class="goods-tag">{{t}}</text>
               </view>
               <view class="goods-title">{{item.title}}</view>
-              <!-- SKU 规格选择条 -->
-              <view class="sku-row" wx:if="{{item.skuList && item.skuList.length > 0}}">
-                <view
-                  wx:for="{{item.skuList}}"
-                  wx:key="skuId"
-                  class="sku-chip {{item.selectedSkuIndex === index ? 'sku-chip--active' : ''}}"
-                  data-spuid="{{item.spuId}}"
-                  data-skuindex="{{index}}"
-                  catchtap="onSkuSelect"
-                >
-                  <text class="sku-label">{{item.specLabel || '默认'}}</text>
-                  <text class="sku-price">¥{{item.price}}</text>
-                </view>
-              </view>
               <view class="goods-bottom">
                 <view class="goods-price-row">
-                  <text class="goods-price" wx:if="{{item.selectedSkuIndex >= 0}}">¥{{item.skuList[item.selectedSkuIndex].price}}</text>
-                  <text class="goods-price" wx:else>¥{{item.price}}起</text>
+                  <text class="goods-price">¥{{item.price}}起</text>
                 </view>
-                <view class="goods-btn {{item.selectedSkuIndex < 0 && item.skuList.length > 0 ? 'goods-btn--disabled' : ''}}" catchtap="onAddCart" data-spuid="{{item.spuId}}">抢</view>
+                <!-- 多规格：选规格 --><view class="goods-btn goods-btn--spec" wx:if="{{item.skuList && item.skuList.length > 1}}" catchtap="onSelectSpec" data-spuid="{{item.spuId}}">选规格</view>
+                <!-- 单规格：加入购物车 --><view class="goods-btn" wx:else catchtap="onAddCart" data-spuid="{{item.spuId}}">+</view>
               </view>
             </view>
           </view>
@@ -136,4 +122,17 @@
       </view>
     </view>
   </t-popup>
+
+  <!-- 规格选择弹窗 -->
+  <goods-specs-popup
+    show="{{specPopupShow}}"
+    title="{{specData.title || ''}}"
+    src="{{specData.thumb || ''}}"
+    specList="{{specData.specList || []}}"
+    skuList="{{specData.skuList || []}}"
+    bind:closeSpecsPopup="onSpecPopupClose"
+    bind:specsConfirm="onSpecConfirm"
+    bind:addCart="onSpecAddCart"
+    isStock="{{true}}"
+  />
 </view>

@@ -53,9 +53,8 @@ page {
   transition: transform 0.2s;
 }
 
-/* 选中态 */
 .top-item--active {
-  background: #E8F8F0;
+  background: #FFF0EC;
 }
 
 .top-icon {
@@ -65,26 +64,26 @@ page {
 }
 
 .top-item--active .top-icon {
-  box-shadow: 0 0 0 4rpx #1BBE6B;
+  box-shadow: 0 0 0 4rpx #FA550F;
 }
 
 .top-icon-placeholder {
   width: 72rpx;
   height: 72rpx;
   border-radius: 50%;
-  background: #E8F8F0;
+  background: #FFF0EC;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .top-item--active .top-icon-placeholder {
-  background: #1BBE6B;
+  background: #FA550F;
 }
 
 .top-icon-text {
   font-size: 28rpx;
-  color: #1BBE6B;
+  color: #FA550F;
   font-weight: 600;
 }
 
@@ -102,7 +101,7 @@ page {
 }
 
 .top-item--active .top-label {
-  color: #1BBE6B;
+  color: #FA550F;
   font-weight: 600;
 }
 
@@ -115,7 +114,7 @@ page {
   margin-top: 16rpx;
 }
 
-/* ====== 左侧：二级分类 + 三级chips ====== */
+/* ====== 左侧：二级分类 ====== */
 .left-side {
   flex-shrink: 0;
   width: 180rpx;
@@ -142,7 +141,7 @@ page {
 
 .left-item--active {
   background: #fff;
-  color: #1BBE6B;
+  color: #FA550F;
   font-weight: 600;
 }
 
@@ -153,7 +152,7 @@ page {
   top: 20rpx;
   bottom: 20rpx;
   width: 6rpx;
-  background: #1BBE6B;
+  background: #FA550F;
   border-radius: 0 3rpx 3rpx 0;
 }
 
@@ -181,7 +180,7 @@ page {
 }
 
 .sort-item--active {
-  color: #1BBE6B;
+  color: #FA550F;
   font-weight: 600;
 }
 
@@ -210,8 +209,8 @@ page {
 }
 
 .chip--active {
-  color: #1BBE6B;
-  background: #E8F8F0;
+  color: #FA550F;
+  background: #FFF0EC;
   font-weight: 600;
 }
 
@@ -220,7 +219,7 @@ page {
   flex: 1;
   background: #fff;
   padding: 0 16rpx;
-  height: 0; /* scroll-view 在 flex 中需要定高才能滚动 */
+  height: 0;
 }
 
 .goods-list {
@@ -301,8 +300,8 @@ page {
 
 .sellpoint {
   font-size: 20rpx;
-  color: #1BBE6B;
-  background: #E8F8F0;
+  color: #FA550F;
+  background: #FFF0EC;
   padding: 2rpx 10rpx;
   border-radius: 4rpx;
   line-height: 1.5;
@@ -313,46 +312,6 @@ page {
   font-size: 22rpx;
   color: #999;
   margin-bottom: 6rpx;
-}
-
-/* SKU 规格选择条 */
-.sku-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12rpx;
-  margin-bottom: 8rpx;
-}
-
-.sku-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 8rpx;
-  padding: 6rpx 16rpx;
-  background: #F5F6F7;
-  border-radius: 8rpx;
-  border: 2rpx solid transparent;
-  transition: all 0.2s;
-}
-
-.sku-chip--active {
-  background: #E8F8F0;
-  border-color: #1BBE6B;
-}
-
-.sku-label {
-  font-size: 22rpx;
-  color: #666;
-}
-
-.sku-chip--active .sku-label {
-  color: #1BBE6B;
-  font-weight: 500;
-}
-
-.sku-price {
-  font-size: 24rpx;
-  color: #FF3B30;
-  font-weight: 600;
 }
 
 /* 底部价格+按钮 */
@@ -370,7 +329,7 @@ page {
 
 .goods-price {
   font-size: 32rpx;
-  color: #FF3B30;
+  color: #FA550F;
   font-weight: 700;
 }
 
@@ -383,14 +342,16 @@ page {
   justify-content: center;
   font-size: 24rpx;
   color: #fff;
-  background: linear-gradient(135deg, #FF8C00, #FF5A00);
+  background: #FA550F;
   border-radius: 24rpx;
   font-weight: 600;
 }
 
-.goods-btn--disabled {
-  background: #ccc;
-  opacity: 0.5;
+.goods-btn--spec {
+  width: auto;
+  padding: 0 16rpx;
+  font-size: 22rpx;
+  border-radius: 24rpx;
 }
 
 /* ====== 公共底部 ====== */
@@ -447,7 +408,7 @@ page {
 }
 
 .popup-item--active {
-  background: #E8F8F0;
+  background: #FFF0EC;
 }
 
 .popup-icon {
@@ -460,7 +421,7 @@ page {
   width: 80rpx;
   height: 80rpx;
   border-radius: 50%;
-  background: #E8F8F0;
+  background: #FFF0EC;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -468,7 +429,7 @@ page {
 
 .popup-icon-text {
   font-size: 30rpx;
-  color: #1BBE6B;
+  color: #FA550F;
   font-weight: 600;
 }
 
@@ -478,6 +439,6 @@ page {
 }
 
 .popup-item--active .popup-label {
-  color: #1BBE6B;
+  color: #FA550F;
   font-weight: 600;
 }

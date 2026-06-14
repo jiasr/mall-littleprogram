@@ -15,9 +15,12 @@ Page({
     popupVisible: false,
     scrollToId: '',
     // 筛选排序
-    sortType: 0,   // 0-销量 1-折扣 2-价格
+    sortType: 0,
     sortOrder: 'desc',
     activeChip: 0,
+    // 规格弹窗
+    specPopupShow: false,
+    specData: { title: '', thumb: '', specList: [], skuList: [] },
   },
 
   onShow() {
@@ -96,19 +99,10 @@ Page({
         sort: sortType,
         sortType: sortType === 2 ? sortOrder : (sortTypeMap[sortType] || '0'),
       });
-      const newList = (res.spuList || []).map(item => {
-        const skuList = (item.skuList || []).map(sku => ({
-          ...sku,
-          price: sku.price != null ? ((sku.price / 100).toFixed(2)) : '0.00',
-          specLabel: (sku.specInfo || []).map(s => s.specValues || '').join('/'),
-        }));
-        return {
-          ...item,
-          price: item.price != null ? ((item.price / 100).toFixed(2)) : '0.00',
-          skuList,
-          selectedSkuIndex: skuList.length === 1 ? 0 : -1, // 单 SKU 自动选中
-        };
-      });
+      const newList = (res.spuList || []).map(item => ({
+        ...item,
+        price: item.price != null ? ((item.price / 100).toFixed(2)) : '0.00',
+      }));
       this.setData({
         goodsList: pageNum === 1 ? newList : [...goodsList, ...newList],
         hasMore: newList.length >= pageSize,
@@ -169,30 +163,69 @@ Page({
     wx.navigateTo({ url: `/pages/goods/details/index?spuId=${spuId}` });
   },
 
-  // ====== 选中 SKU ======
-  onSkuSelect(e) {
-    const { spuid, skuindex } = e.currentTarget.dataset;
-    const idx = parseInt(skuindex);
-    const goodsList = this.data.goodsList.map(item => {
-      if (item.spuId === spuid) {
-        return { ...item, selectedSkuIndex: item.selectedSkuIndex === idx ? -1 : idx };
-      }
-      return item;
-    });
-    this.setData({ goodsList });
-  },
-
-  // ====== 加购按钮 ======
-  onAddCart(e) {
+  // ====== 选规格（弹窗） ======
+  onSelectSpec(e) {
     const spuId = e.currentTarget.dataset.spuid;
     const item = this.data.goodsList.find(g => g.spuId === spuId);
-    if (!item || item.selectedSkuIndex < 0) {
-      wx.showToast({ title: '请先选择规格', icon: 'none' });
-      return;
-    }
-    const sku = item.skuList[item.selectedSkuIndex];
-    // TODO: 调用购物车接口
-    wx.showToast({ title: `已加购: ${sku.specLabel}`, icon: 'success', duration: 1500 });
+    if (!item || !item.skuList) return;
+    // 构建 specList（从 skuList 提取唯一规格）
+    const specMap = {};
+    item.skuList.forEach(sku => {
+      (sku.specInfo || []).forEach(si => {
+        const key = si.specTitle || si.specId || '';
+        if (!specMap[key]) specMap[key] = { title: key, values: [] };
+        const v = si.specValues || si.specValue || '';
+        if (!specMap[key].values.includes(v)) specMap[key].values.push(v);
+      });
+    });
+    // 构建 specList
+    const specList = Object.values(specMap).map(s => ({
+      title: s.title,
+      specValueList: s.values.map(v => ({
+        specValue: v,
+        specValueId: s.title + '_' + v,
+      })),
+    }));
+    // 构建 skuList（specValueId 须与 specList 一致）
+    const skuList = item.skuList.map(sku => ({
+      skuId: sku.skuId,
+      quantity: sku.stock || 0,
+      specInfo: (sku.specInfo || []).map(si => ({
+        specId: si.specTitle || si.specId || '',
+        specValueId: (si.specTitle || si.specId || '') + '_' + (si.specValues || si.specValue || ''),
+        specValue: si.specValues || si.specValue || '',
+      })),
+    }));
+    this.setData({
+      specPopupShow: true,
+      specData: {
+        title: item.title,
+        thumb: item.thumb || '',
+        specList,
+        skuList,
+      },
+    });
+  },
+
+  onSpecPopupClose() {
+    this.setData({ specPopupShow: false });
+  },
+
+  onSpecConfirm(e) {
+    const { skuId, buyNum } = e.detail || {};
+    wx.showToast({ title: `已加入购物车`, icon: 'success', duration: 1500 });
+    this.setData({ specPopupShow: false });
+  },
+
+  onSpecAddCart(e) {
+    const { skuId, buyNum } = e.detail || {};
+    wx.showToast({ title: `已加入购物车`, icon: 'success', duration: 1500 });
+    this.setData({ specPopupShow: false });
+  },
+
+  // ====== 加购按钮（单规格） ======
+  onAddCart(e) {
+    wx.showToast({ title: '已加入购物车', icon: 'success', duration: 1500 });
   },
 
   // ====== 弹窗 ======
