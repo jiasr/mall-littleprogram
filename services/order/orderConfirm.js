@@ -39,17 +39,35 @@ export function fetchSettleDetail(params) {
       inValidGoodsList: [],
       limitGoodsList: [],
       couponList: [],
-      userAddress: userAddressReq,  // ← 传入选中的地址，不覆盖
+      userAddress: userAddressReq,
       totalPayAmount: String(preview.payAmount || 0),
       totalGoodsCount: totalItems,
       totalPromotionAmount: 0,
       totalCouponAmount: 0,
+      settleType: 1,
+      totalAmount: preview.payAmount || 0,
+      originalTotalAmount: preview.totalAmount || 0,
     }};
   });
 }
 
 export function dispatchCommitPay(params) {
-  return post('/v1/order/pay', params);
+  var addr = params.userAddressReq || {};
+  var items = (params.goodsRequestList || []).map(function(g) {
+    return { spuId: g.spuId, skuId: g.skuId, quantity: g.quantity || 1 };
+  });
+  return post('/v1/order/create', {
+    items: items,
+    consignee: {
+      name: addr.name || '',
+      mobile: addr.tel || addr.mobile || '',
+      province: addr.province || '',
+      city: addr.city || '',
+      district: addr.district || '',
+      detail: addr.detail || addr.address || '',
+    },
+    remark: '',
+  });
 }
 
 export function dispatchSupplementInvoice() {
