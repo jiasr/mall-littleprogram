@@ -146,6 +146,7 @@
     promotionGoodsList="{{promotionGoodsList}}"
     couponsShow="{{couponsShow}}"
   />
+
 </view>
 <t-toast id="t-toast" />
 <t-dialog id="t-dialog" />

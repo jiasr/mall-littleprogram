@@ -7,6 +7,10 @@
   currAuthStep="{{currAuthStep}}"
   bind:gotoUserEditPage="gotoUserEditPage"
 />
+<!-- 微信用户信息授权 -->
+<button class="user-profile-btn" open-type="chooseAvatar" bind:chooseavatar="onChooseAvatar" wx:if="{{showGetUserProfile}}">
+  获取头像
+</button>
 <view class="content-wrapper">
   <view class="order-group-wrapper">
     <t-order-group orderTagInfos="{{orderTagInfos}}" bind:onClickTop="jumpAllOrder" bind:onClickItem="jumpNav" />

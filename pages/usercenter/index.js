@@ -90,6 +90,7 @@ const getDefaultData = () => ({
   currAuthStep: 1,
   showKefu: true,
   versionNo: '',
+  showGetUserProfile: false,
 });
 
 Page({
@@ -109,6 +110,30 @@ Page({
 
   init() {
     this.fetUseriInfoHandle();
+    // 检查是否已有昵称，没有则引导授权
+    if (this.data.userInfo.nickName === '正在登录...') {
+      this.setData({ showGetUserProfile: true });
+    }
+  },
+
+  // 选择头像（微信新版 chooseAvatar 按钮）
+  onChooseAvatar(e) {
+    var avatarUrl = e.detail.avatarUrl;
+    this.setData({
+      showGetUserProfile: false,
+      userInfo: Object.assign({}, this.data.userInfo, { avatarUrl: avatarUrl }),
+    });
+  },
+
+  // 昵称输入（新版 input type="nickname"）
+  onNicknameChange(e) {
+    var nickName = e.detail.value;
+    if (nickName) {
+      this.setData({
+        showGetUserProfile: false,
+        userInfo: Object.assign({}, this.data.userInfo, { nickName: nickName }),
+      });
+    }
   },
 
   fetUseriInfoHandle() {

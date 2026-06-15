@@ -81,11 +81,17 @@ function getPayParams(orderId) {
 /** 微信支付（调起 wx.requestPayment） */
 export const wechatPayOrder = (payOrderInfo) => {
   var orderId = payOrderInfo.tradeNo || payOrderInfo.orderId;
+  console.log('[pay] wechatPayOrder orderId:', orderId);
   if (!orderId) {
     payFail(payOrderInfo, 'orderId不能为空');
     return Promise.reject(new Error('orderId不能为空'));
   }
   return getPayParams(orderId).then(function(res) {
+    console.log('[pay] getPayParams success, paySign:', res.paySign ? 'OK' : 'NONE');
+    if (!res.paySign) {
+      wx.showToast({ title: '获取支付参数失败', icon: 'none' });
+      return Promise.reject(new Error('paySign为空'));
+    }
     var ps = res.paySign;
     return new Promise(function(resolve, reject) {
       wx.requestPayment({
@@ -95,20 +101,19 @@ export const wechatPayOrder = (payOrderInfo) => {
         signType: ps.signType,
         paySign: ps.paySign,
         success: function() {
+          console.log('[pay] wx.requestPayment success');
           paySuccess({ tradeNo: orderId, payAmt: res.payAmount });
           resolve();
         },
         fail: function(err) {
+          console.log('[pay] wx.requestPayment fail:', err.errMsg);
           payFail(payOrderInfo, err.errMsg);
           reject(err);
         },
       });
     });
   }).catch(function(err) {
-    Toast({
-      context: this, selector: '#t-toast',
-      message: err.message || '支付失败',
-      duration: 2000, icon: 'close-circle',
-    });
+    console.error('[pay] 支付流程失败:', err.message || err);
+    wx.showToast({ title: err.message || '支付失败', icon: 'none', duration: 2000 });
   });
 };

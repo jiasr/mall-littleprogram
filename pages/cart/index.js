@@ -154,8 +154,16 @@ Page({
   },
 
   onQuantityChange(e) {
-    const { goods: { spuId, skuId }, quantity } = e.detail;
-    this.changeQuantityService({ spuId, skuId, quantity }).then(() => this.refreshData());
+    // 防抖 300ms
+    if (!this._qtyTimers) this._qtyTimers = {};
+    var key = e.detail.goods.spuId + '_' + e.detail.goods.skuId;
+    clearTimeout(this._qtyTimers[key]);
+    var that = this;
+    this._qtyTimers[key] = setTimeout(function() {
+      var goods = e.detail.goods;
+      that.changeQuantityService({ spuId: goods.spuId, skuId: goods.skuId, quantity: e.detail.quantity })
+        .then(function() { that.refreshData(); });
+    }, 300);
   },
 
   onGoodsDelete(e) {

@@ -40,6 +40,8 @@ Page({
     submitCouponList: [], //所有门店所选优惠券
     currentStoreId: null, //当前优惠券storeId
     userAddress: null,
+    payPopupShow: false,
+    selectedPayMethod: 'wechat',
   },
 
   payLock: false,
@@ -350,126 +352,55 @@ Page({
       this.handleOptionsParams({ goodsRequestList });
     }
   },
-  // 提交订单
+  // 提交订单 → 创建订单 + 直接调起微信支付
   submitOrder() {
-    const {
-      settleDetailData,
-      userAddressReq,
-      invoiceData,
-      storeInfoList,
-      submitCouponList,
-    } = this.data;
-    const { goodsRequestList } = this;
+    var that = this;
+    var settleDetailData = this.data.settleDetailData;
+    var userAddressReq = this.data.userAddressReq;
+    var invoiceData = this.data.invoiceData;
+    var storeInfoList = this.data.storeInfoList;
+    var submitCouponList = this.data.submitCouponList;
+    var goodsRequestList = this.goodsRequestList;
 
     if (!userAddressReq && !settleDetailData.userAddress) {
-      Toast({
-        context: this,
-        selector: '#t-toast',
-        message: '请添加收货地址',
-        duration: 2000,
-        icon: 'help-circle',
-      });
+      Toast({ context: this, selector: '#t-toast', message: '请添加收货地址', duration: 2000, icon: 'help-circle' });
+      return;
+    }
+    if (!settleDetailData.settleType || !settleDetailData.totalAmount) return;
+    if (this.payLock) return;
 
-      return;
-    }
-    if (
-      this.payLock ||
-      !settleDetailData.settleType ||
-      !settleDetailData.totalAmount
-    ) {
-      return;
-    }
     this.payLock = true;
-    const resSubmitCouponList = this.handleCouponList(submitCouponList);
-    const params = {
+    var params = {
       userAddressReq: settleDetailData.userAddress || userAddressReq,
       goodsRequestList: goodsRequestList,
-      userName: settleDetailData.userAddress.name || userAddressReq.name,
-      totalAmount: settleDetailData.totalPayAmount, //取优惠后的结算金额
+      userName: (settleDetailData.userAddress || userAddressReq).name || '',
+      totalAmount: settleDetailData.totalPayAmount,
       invoiceRequest: null,
-      storeInfoList,
-      couponList: resSubmitCouponList,
+      storeInfoList: storeInfoList,
+      couponList: this.handleCouponList(submitCouponList),
     };
-    if (invoiceData && invoiceData.email) {
-      params.invoiceRequest = invoiceData;
-    }
+    if (invoiceData && invoiceData.email) params.invoiceRequest = invoiceData;
+
     commitPay(params).then(
-      (res) => {
-        this.payLock = false;
-        const { data } = res;
-        // 提交出现 失效 不在配送范围 限购的商品 提示弹窗
-        if (this.isInvalidOrder(data)) {
-          return;
-        }
+      function(res) {
+        that.payLock = false;
+        var data = res.data;
+        if (that.isInvalidOrder(data)) return;
         if (res.code === 'Success') {
-          this.handlePay(data, settleDetailData);
+          that.handlePay(data, settleDetailData);
         } else {
-          Toast({
-            context: this,
-            selector: '#t-toast',
-            message: res.msg || '提交订单超时，请稍后重试',
-            duration: 2000,
-            icon: '',
-          });
-          setTimeout(() => {
-            // 提交支付失败   返回购物车
-            wx.navigateBack();
-          }, 2000);
+          Toast({ context: that, selector: '#t-toast', message: res.msg || '提交订单超时', duration: 2000, icon: '' });
+          setTimeout(function() { wx.navigateBack(); }, 2000);
         }
       },
-      (err) => {
-        this.payLock = false;
-        if (
-          err.code === 'CONTAINS_INSUFFICIENT_GOODS' ||
-          err.code === 'TOTAL_AMOUNT_DIFFERENT'
-        ) {
-          Toast({
-            context: this,
-            selector: '#t-toast',
-            message: err.msg || '支付异常',
-            duration: 2000,
-            icon: '',
-          });
-          this.init();
-        } else if (err.code === 'ORDER_PAY_FAIL') {
-          Toast({
-            context: this,
-            selector: '#t-toast',
-            message: '支付失败',
-            duration: 2000,
-            icon: 'close-circle',
-          });
-          setTimeout(() => {
-            wx.redirectTo({ url: '/order/list' });
-          });
-        } else if (err.code === 'ILLEGAL_CONFIG_PARAM') {
-          Toast({
-            context: this,
-            selector: '#t-toast',
-            message:
-              '支付失败，微信支付商户号设置有误，请商家重新检查支付设置。',
-            duration: 2000,
-            icon: 'close-circle',
-          });
-          setTimeout(() => {
-            wx.redirectTo({ url: '/order/list' });
-          });
-        } else {
-          Toast({
-            context: this,
-            selector: '#t-toast',
-            message: err.msg || '提交支付超时，请稍后重试',
-            duration: 2000,
-            icon: '',
-          });
-          setTimeout(() => {
-            // 提交支付失败  返回购物车
-            wx.navigateBack();
-          }, 2000);
-        }
+      function(err) {
+        that.payLock = false;
+        Toast({ context: that, selector: '#t-toast', message: err.msg || '支付异常', duration: 2000, icon: '' });
       },
     );
   },
+
+  onPopupChange(e) { this.setData({ popupShow: e.detail.visible }); },
 
   // 处理支付
   handlePay(data, settleDetailData) {

@@ -1,5 +1,6 @@
 import Toast from 'tdesign-miniprogram/toast/index';
 import { fetchGood } from '../../../services/good/fetchGood';
+import { post } from '../../../utils/request';
 import { fetchActivityList } from '../../../services/activity/fetchActivityList';
 import {
   getGoodsDetailsCommentList,
@@ -219,15 +220,34 @@ Page({
     }
   },
 
-  addCart() {
-    const { isAllSelectedSku } = this.data;
-    Toast({
-      context: this,
-      selector: '#t-toast',
-      message: isAllSelectedSku ? '点击加入购物车' : '请选择规格',
-      icon: '',
-      duration: 1000,
-    });
+  async addCart() {
+    const { isAllSelectedSku, selectItem, details } = this.data;
+    if (!isAllSelectedSku) {
+      Toast({ context: this, selector: '#t-toast', message: '请选择规格', icon: '', duration: 1000 });
+      return;
+    }
+    var skuId = selectItem && selectItem[0] && selectItem[0].skuId;
+    if (!skuId) return;
+    try {
+      var res = await post('/v1/cart/add', { spuId: details.spuId, skuId: skuId, quantity: 1 });
+      if (res && res.success) {
+        Toast({ context: this, selector: '#t-toast', message: '已加入购物车', icon: 'check', duration: 1500 });
+        this.updateCartBadge(res.cartCount);
+      } else {
+        Toast({ context: this, selector: '#t-toast', message: res?.message || '加购失败', icon: 'none' });
+      }
+    } catch (e) {
+      Toast({ context: this, selector: '#t-toast', message: '加购失败', icon: 'none' });
+    }
+  },
+
+  updateCartBadge(count) {
+    var app = getApp();
+    app.globalData.cartCount = typeof count === 'number' ? count : (app.globalData.cartCount || 0);
+    if (typeof this.getTabBar === 'function') {
+      var tabBar = this.getTabBar();
+      if (tabBar && tabBar.updateCartBadge) tabBar.updateCartBadge();
+    }
   },
 
   gotoBuy(type) {

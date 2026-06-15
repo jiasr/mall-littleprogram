@@ -5,45 +5,42 @@ export function fetchSettleDetail(params) {
   var goodsList = (params.goodsRequestList || []).map(function(g) {
     return { spuId: g.spuId, skuId: g.skuId, quantity: g.quantity || 1 };
   });
-  var userAddressReq = params.userAddressReq || null;
+  var rawAddr = params.userAddressReq || null;
+  // 地址字段映射：address-card 组件需要 provinceName/cityName/detailAddress/phone
+  var addr = rawAddr ? {
+    name: rawAddr.name || rawAddr.userName || '',
+    phone: rawAddr.mobile || rawAddr.tel || rawAddr.phone || '',
+    provinceName: rawAddr.province || rawAddr.provinceName || '',
+    cityName: rawAddr.city || rawAddr.cityName || '',
+    districtName: rawAddr.district || rawAddr.districtName || '',
+    detailAddress: rawAddr.detail || rawAddr.detailAddress || rawAddr.address || '',
+    addressTag: rawAddr.addressTag || '',
+    checked: rawAddr.checked !== undefined ? rawAddr.checked : true,
+  } : null;
   return post('/v1/order/preview', { items: goodsList }).then(function(preview) {
     if (!preview) return { data: {} };
     var totalItems = 0;
     var items = (preview.items || []).map(function(it) {
       totalItems += it.quantity || 0;
       return {
-        skuId: it.skuId,
-        spuId: it.spuId,
-        goodsName: it.title,
-        image: it.thumb,
-        price: it.price,
-        settlePrice: String(it.price),
-        quantity: it.quantity,
-        skuSpecLst: [{ specValue: it.specLabel }],
-        storeId: '1000',
-        reminderStock: 999,
-        tagPrice: 0,
-        tagText: null,
-        roomId: null,
+        skuId: it.skuId, spuId: it.spuId, goodsName: it.title,
+        image: it.thumb, price: it.price, settlePrice: String(it.price),
+        quantity: it.quantity, skuSpecLst: [{ specValue: it.specLabel }],
+        storeId: '1000', reminderStock: 999, tagPrice: 0, tagText: null, roomId: null,
       };
     });
     return { data: {
       storeGoodsList: [{
-        storeId: '1000',
-        storeName: '',
+        storeId: '1000', storeName: '',
         storeTotalPayAmount: preview.payAmount || 0,
         skuDetailVos: items,
       }],
-      outOfStockGoodsList: [],
-      abnormalDeliveryGoodsList: [],
-      inValidGoodsList: [],
-      limitGoodsList: [],
-      couponList: [],
-      userAddress: userAddressReq,
+      outOfStockGoodsList: [], abnormalDeliveryGoodsList: [],
+      inValidGoodsList: [], limitGoodsList: [], couponList: [],
+      userAddress: addr,
       totalPayAmount: String(preview.payAmount || 0),
       totalGoodsCount: totalItems,
-      totalPromotionAmount: 0,
-      totalCouponAmount: 0,
+      totalPromotionAmount: 0, totalCouponAmount: 0,
       settleType: 1,
       totalAmount: preview.payAmount || 0,
       originalTotalAmount: preview.totalAmount || 0,
@@ -52,19 +49,19 @@ export function fetchSettleDetail(params) {
 }
 
 export function dispatchCommitPay(params) {
-  var addr = params.userAddressReq || {};
+  var rawAddr = params.userAddressReq || {};
   var items = (params.goodsRequestList || []).map(function(g) {
     return { spuId: g.spuId, skuId: g.skuId, quantity: g.quantity || 1 };
   });
   return post('/v1/order/create', {
     items: items,
     consignee: {
-      name: addr.name || '',
-      mobile: addr.tel || addr.mobile || '',
-      province: addr.province || '',
-      city: addr.city || '',
-      district: addr.district || '',
-      detail: addr.detail || addr.address || '',
+      name: rawAddr.name || rawAddr.userName || '',
+      mobile: rawAddr.phone || rawAddr.mobile || rawAddr.tel || '',
+      province: rawAddr.province || rawAddr.provinceName || '',
+      city: rawAddr.city || rawAddr.cityName || '',
+      district: rawAddr.district || rawAddr.districtName || '',
+      detail: rawAddr.detailAddress || rawAddr.detail || rawAddr.address || '',
     },
     remark: '',
   });
