@@ -74,14 +74,19 @@ Page({
     this.refreshList(status);
   },
 
+  // 前端状态码 → 后端状态码映射
+  statusMap: { 5: 0, 10: 1, 40: 2, 50: 3 },
+
   getOrderList(statusCode = -1, reset = false) {
-    const params = {
+    var params = {
       parameter: {
         pageSize: this.page.size,
         pageNum: this.page.num,
       },
     };
-    if (statusCode !== -1) params.parameter.orderStatus = statusCode;
+    if (statusCode !== -1) {
+      params.parameter.orderStatus = this.statusMap[statusCode] !== undefined ? this.statusMap[statusCode] : statusCode;
+    }
     this.setData({ listLoading: 1 });
     return fetchOrders(params)
       .then((res) => {
