@@ -56,6 +56,7 @@ export const payFail = (payOrderInfo, resultMsg) => {
 
 /** 获取微信支付参数 */
 function getPayParams(orderId) {
+  console.log("/** 获取微信支付参数 */")
   var app = getApp();
   var baseUrl = app ? app.globalData.baseUrl : 'http://localhost:8560';
   var token = app ? app.globalData.token || app.globalData.userid || '' : '';
@@ -70,7 +71,11 @@ function getPayParams(orderId) {
         if (resp && resp.flag === true && resp.resData && resp.resData.paySign) {
           resolve(resp.resData);
         } else {
-          reject(new Error(resp.resData ? (resp.resData.message || '获取支付参数失败') : '请求失败'));
+          var errMsg = '请求失败';
+          if (resp) {
+            errMsg = resp.exceptionMsg || resp.errMessage || resp.resData?.message || '获取支付参数失败';
+          }
+          reject(new Error(errMsg));
         }
       },
       fail: function() { reject(new Error('网络异常')); },

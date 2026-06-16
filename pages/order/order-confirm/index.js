@@ -404,7 +404,7 @@ Page({
 
   // 处理支付
   handlePay(data, settleDetailData) {
-    const { channel, payInfo, tradeNo, interactId, transactionId } = data;
+    const { payInfo, tradeNo, interactId, transactionId } = data;
     const { totalAmount, totalPayAmount } = settleDetailData;
     const payOrderInfo = {
       payInfo: payInfo,
@@ -416,9 +416,7 @@ Page({
       transactionId: transactionId,
     };
 
-    if (channel === 'wechat') {
-      wechatPayOrder(payOrderInfo);
-    }
+    wechatPayOrder(payOrderInfo);
   },
 
   hide() {
