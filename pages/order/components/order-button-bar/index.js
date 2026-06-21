@@ -1,6 +1,8 @@
 import Toast from 'tdesign-miniprogram/toast/index';
 import Dialog from 'tdesign-miniprogram/dialog/index';
 import { OrderButtonTypes } from '../../config';
+import { wechatPayOrder } from '../../order-confirm/pay';
+import { cancelOrder } from '../../../../services/order/order';
 
 Component({
   options: {
@@ -116,12 +118,31 @@ Component({
     },
 
     onCancel() {
-      Toast({
-        context: this,
-        selector: '#t-toast',
-        message: '你点击了取消订单',
-        icon: 'check-circle',
-      });
+      Dialog.confirm({
+        title: '确认取消订单？',
+        content: '',
+        confirmBtn: '确认取消',
+        cancelBtn: '暂不取消',
+      })
+        .then(() => {
+          cancelOrder(this.data.order.orderNo).then(() => {
+            Toast({
+              context: this,
+              selector: '#t-toast',
+              message: '订单已取消',
+              icon: 'check-circle',
+            });
+            this.triggerEvent('refresh');
+          }).catch(() => {
+            Toast({
+              context: this,
+              selector: '#t-toast',
+              message: '取消失败',
+              icon: 'close-circle',
+            });
+          });
+        })
+        .catch(() => {});
     },
 
     onConfirm() {
@@ -149,13 +170,38 @@ Component({
         });
     },
 
-    onPay() {
-      Toast({
-        context: this,
-        selector: '#t-toast',
-        message: '你点击了去支付',
-        icon: 'check-circle',
+    onPay(order) {
+      wechatPayOrder({ tradeNo: order.orderNo, orderId: order.orderNo }).then(() => {
+        this.triggerEvent('refresh');
       });
+    },
+
+    onDelete(order) {
+      Dialog.confirm({
+        title: '确认删除该订单？',
+        content: '删除后不可恢复',
+        confirmBtn: '删除',
+        cancelBtn: '取消',
+      })
+        .then(() => {
+          cancelOrder(order.orderNo).then(() => {
+            Toast({
+              context: this,
+              selector: '#t-toast',
+              message: '订单已删除',
+              icon: 'check-circle',
+            });
+            this.triggerEvent('refresh');
+          }).catch(() => {
+            Toast({
+              context: this,
+              selector: '#t-toast',
+              message: '删除失败',
+              icon: 'close-circle',
+            });
+          });
+        })
+        .catch(() => {});
     },
 
     onBuyAgain() {

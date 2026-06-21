@@ -23,7 +23,7 @@ Page({
   },
 
   onLoad(query) {
-    this.orderNo = query.orderNo;
+    this.orderId = parseInt(query.id);
     this.init();
     this.navbar = this.selectComponent('#navbar');
     this.pullDownRefresh = this.selectComponent('#wr-pull-down-refresh');
@@ -78,10 +78,10 @@ Page({
 
   getDetail() {
     const params = {
-      parameter: this.orderNo,
+      id: this.orderId,
     };
     return fetchOrderDetail(params).then((res) => {
-      const order = res.data;
+      const order = res;
       const _order = {
         id: order.orderId,
         orderNo: order.orderNo,
@@ -124,7 +124,7 @@ Page({
           [OrderStatus.PENDING_PAYMENT, OrderStatus.PENDING_DELIVERY].includes(
             order.orderStatus,
           ) && order.orderSubStatus !== -1, // 订单正在取消审核时不允许修改地址（但是返回的状态码与待发货一致）
-        isPaid: !!order.paymentVO.paySuccessTime,
+        isPaid: !!order.paidAt,
         invoiceStatus: this.datermineInvoiceStatus(order),
         invoiceDesc: order.invoiceDesc,
         invoiceType:
@@ -172,9 +172,10 @@ Page({
 
   getStoreDetail() {
     fetchBusinessTime().then((res) => {
+      const data = res || {};
       const storeDetail = {
-        storeTel: res.data.telphone,
-        storeBusiness: res.data.businessTime.join('\n'),
+        storeTel: data.telphone || '',
+        storeBusiness: (data.businessTime || []).join('\n'),
       };
       this.setData({ storeDetail });
     });

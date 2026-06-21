@@ -95,7 +95,7 @@ Page({
         if (res && res.data && res.data.orders) {
           orderList = (res.data.orders || []).map((order) => {
             return {
-              id: order.orderId,
+              id: order.id,
               orderNo: order.orderNo,
               parentOrderNo: order.parentOrderNo,
               storeId: order.storeId,
@@ -188,7 +188,7 @@ Page({
   onOrderCardTap(e) {
     const { order } = e.currentTarget.dataset;
     wx.navigateTo({
-      url: `/pages/order/order-detail/index?orderNo=${order.orderNo}`,
+      url: `/pages/order/order-detail/index?id=${order.id}`,
     });
   },
 });
