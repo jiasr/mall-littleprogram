@@ -107,8 +107,15 @@ export const wechatPayOrder = (payOrderInfo) => {
         paySign: ps.paySign,
         success: function() {
           console.log('[pay] wx.requestPayment success');
-          paySuccess({ tradeNo: orderId, payAmt: res.payAmount });
-          resolve();
+          // 通知后端向微信确认支付状态
+          confirmPay(orderId).then(function() {
+            paySuccess({ tradeNo: orderId, payAmt: res.payAmount });
+            resolve();
+          }).catch(function() {
+            // 确认失败也跳转结果页，回调到后会更新
+            paySuccess({ tradeNo: orderId, payAmt: res.payAmount });
+            resolve();
+          });
         },
         fail: function(err) {
           console.log('[pay] wx.requestPayment fail:', err.errMsg);
@@ -122,3 +129,31 @@ export const wechatPayOrder = (payOrderInfo) => {
     wx.showToast({ title: err.message || '支付失败', icon: 'none', duration: 2000 });
   });
 };
+
+/** 通知后端确认支付（后端主动查微信验证后更新状态） */
+function confirmPay(orderId) {
+  var app = getApp();
+  var baseUrl = app ? app.globalData.baseUrl : 'http://localhost:8560';
+  var token = app ? app.globalData.token || app.globalData.userid || '' : '';
+  return new Promise(function(resolve, reject) {
+    wx.request({
+      url: baseUrl + '/v1/order/check-pay',
+      method: 'POST',
+      data: { orderId: orderId },
+      header: { 'content-type': 'application/json', 'token': token },
+      success: function(res) {
+        var resp = res.data;
+        if (resp && resp.flag === true && resp.resData && resp.resData.payStatus === 1) {
+          console.log('[pay] 后端确认支付成功');
+          resolve();
+        } else {
+          console.warn('[pay] 后端确认支付失败:', resp ? (resp.exceptionMsg || resp.errMessage) : '无响应');
+          reject(new Error('confirm failed'));
+        }
+      },
+      fail: function() {
+        reject(new Error('network error'));
+      },
+    });
+  });
+}
