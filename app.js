@@ -6,7 +6,7 @@ import {
 App({
 
   globalData: {
-    baseUrl: 'http://localhost:8560',
+    baseUrl: 'https://xianguo.online',
     userapplycode: '',
     userid: '',
     token: '',
