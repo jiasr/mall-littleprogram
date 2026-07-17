@@ -26,9 +26,6 @@
 			<view class="bar-separately {{soldout || !isStock ? 'bar-addCart-disabled' : ''}}" bindtap="toAddCart">
 				加入购物车
 			</view>
-			<view class="bar-buy {{soldout || !isStock ? 'bar-buyNow-disabled' : ''}}" bindtap="toBuyNow">
-				立即购买
-			</view>
 		</view>
 	</block>
 	<block wx:if="{{isSlotButton}}">

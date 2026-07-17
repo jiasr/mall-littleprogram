@@ -254,30 +254,23 @@
 
 .popup-sku-actions .sku-operate {
   height: 80rpx;
-  width: 50%;
   color: #fff;
   border-radius: 48rpx;
 }
 
+.popup-sku-actions .sku-operate--full {
+  width: 100%;
+}
+
 .popup-sku-actions .sku-operate .sku-operate-addCart {
-  background-color: #ffece9;
-  color: #fa4126;
-  border-radius: 48rpx 0 0 48rpx;
+  background-color: #fa4126;
+  color: #fff;
+  border-radius: 48rpx;
 }
 
 .popup-sku-actions .sku-operate .sku-operate-addCart.disabled {
-  background: rgb(221, 221, 221);
-  color: #fff;
-}
-
-.popup-sku-actions .sku-operate .sku-operate-buyNow {
-  background-color: #fa4126;
-  border-radius: 0 48rpx 48rpx 0;
-}
-
-.popup-sku-actions .sku-operate .sku-operate-buyNow.disabled {
-  color: #fff;
   background: rgb(198, 198, 198);
+  color: #fff;
 }
 
 .popup-sku-actions .sku-operate .selected-sku-btn {

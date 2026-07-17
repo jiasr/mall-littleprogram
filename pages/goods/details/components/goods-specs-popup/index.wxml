@@ -67,14 +67,9 @@
       class="popup-sku-actions flex flex-between {{!isStock ? 'popup-sku-disabled' : ''}}"
       wx:if="{{!outOperateStatus}}"
     >
-      <view class="sku-operate">
+      <view class="sku-operate sku-operate--full">
         <view class="selected-sku-btn sku-operate-addCart {{!isStock ? 'disabled' : ''}}" bindtap="addCart">
           加入购物车
-        </view>
-      </view>
-      <view class="sku-operate">
-        <view class="selected-sku-btn sku-operate-buyNow  {{!isStock ? 'disabled' : ''}}" bindtap="buyNow">
-          立即购买
         </view>
       </view>
     </view>

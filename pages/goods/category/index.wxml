@@ -1,27 +1,25 @@
 <view class="category-page">
   <!-- 一级分类横滑栏 -->
-  <scroll-view class="top-bar" scroll-x scroll-into-view="{{scrollToId}}" scroll-with-animation enhanced show-scrollbar="{{false}}">
-    <view
-      wx:for="{{topList}}"
-      wx:key="index"
-      id="top-{{index}}"
-      class="top-item {{activeTop === index ? 'top-item--active' : ''}}"
-      data-index="{{index}}"
-      bindtap="onTopTap"
-    >
-      <t-image
-        src="{{item.thumbnail || ''}}"
-        t-class="top-icon"
-        mode="aspectFill"
-        wx:if="{{item.thumbnail}}"
-      />
-      <view class="top-icon-placeholder" wx:else>
-        <text class="top-icon-text">{{item.name.slice(0, 1)}}</text>
+  <scroll-view class="top-bar-scroll" scroll-x scroll-into-view="{{scrollToId}}" scroll-with-animation enhanced show-scrollbar="{{false}}">
+    <view class="top-bar">
+      <view
+        wx:for="{{topList}}"
+        wx:key="index"
+        id="top-{{index}}"
+        class="top-item {{activeTop === index ? 'top-item--active' : ''}}"
+        data-index="{{index}}"
+        bindtap="onTopTap"
+      >
+        <view class="top-icon-box {{item.thumbnail ? '' : 'top-icon-box--default'}}">
+          <image wx:if="{{item.thumbnail}}" src="{{item.thumbnail}}" class="top-icon-img" mode="aspectFill" />
+          <text wx:else class="top-icon-default-text">{{item.name.slice(0, 1)}}</text>
+        </view>
+        <text class="top-label">{{item.name}}</text>
       </view>
-      <text class="top-label">{{item.name}}</text>
-    </view>
-    <view class="top-more" bindtap="openPopup">
-      <view class="top-more-icon">⌄</view>
+      <view class="top-more" bindtap="openPopup">
+        <text class="top-more-text">展开</text>
+        <view class="top-more-icon">⌄</view>
+      </view>
     </view>
   </scroll-view>
 
@@ -120,6 +118,7 @@
           <text class="popup-label">{{item.name}}</text>
         </view>
       </view>
+      <view class="popup-footer" bindtap="closePopup">收起</view>
     </view>
   </t-popup>
 

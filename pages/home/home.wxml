@@ -2,17 +2,6 @@
   <t-loading theme="circular" size="40rpx" text="加载中..." inherit-color />
 </view>
 <view class="home-page-header">
-  <view class="search" bind:tap="navToSearchPage">
-    <t-search
-      t-class-input="t-search__input"
-      t-class-input-container="t-search__input-container"
-      placeholder="iphone 19 火热发售中"
-      leftIcon=""
-      disabled
-    >
-      <t-icon slot="left-icon" prefix="wr" name="search" size="40rpx" color="#bbb" />
-    </t-search>
-  </view>
   <view class="swiper-wrap">
     <t-swiper
       wx:if="{{imgSrcs.length > 0}}"
@@ -26,6 +15,44 @@
       bind:click="navToActivityDetail"
     />
   </view>
+</view>
+<!-- 一级分类网格 -->
+<view class="category-section" wx:if="{{categoryPages && categoryPages.length > 0}}">
+  <swiper
+    class="category-swiper"
+    current="{{categorySwiperCurrent}}"
+    bind:change="onCategorySwiperChange"
+    circular="{{false}}"
+    indicator-dots="{{categoryPages.length > 1}}"
+    indicator-color="#ddd"
+    indicator-active-color="#FA550F"
+  >
+    <swiper-item
+      wx:for="{{categoryPages}}"
+      wx:for-item="page"
+      wx:key="index"
+      class="category-swiper-item"
+    >
+      <view class="category-grid">
+        <view
+          class="category-item"
+          wx:for="{{page}}"
+          wx:for-item="cat"
+          wx:key="id"
+          data-id="{{cat.id}}"
+          data-name="{{cat.name}}"
+          bind:tap="navToCategory"
+        >
+          <image
+            class="category-icon"
+            src="{{cat.thumbnail || 'https://via.placeholder.com/80'}}"
+            mode="aspectFill"
+          />
+          <text class="category-name">{{cat.name}}</text>
+        </view>
+      </view>
+    </swiper-item>
+  </swiper>
 </view>
 <view class="home-page-container">
   <view class="home-page-tabs">

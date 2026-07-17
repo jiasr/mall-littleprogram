@@ -110,7 +110,6 @@
       buttonType="{{buttonType}}"
       bind:toAddCart="toAddCart"
       bind:toNav="toNav"
-      bind:toBuyNow="buyItNow"
       class="goods-details-card"
     />
   </view>
@@ -126,7 +125,6 @@
     bind:change="chooseSpecItem"
     bind:changeNum="changeNum"
     bind:addCart="addCart"
-    bind:buyNow="gotoBuy"
     bind:specsConfirm="specsConfirm"
     isStock="{{isStock}}"
     outOperateStatus="{{outOperateStatus}}"

@@ -1,5 +1,6 @@
 import {
-  fetchHome
+  fetchHome,
+  fetchCategoryList
 } from '../../services/home/home';
 import {
   fetchGoodsList
@@ -25,6 +26,9 @@ Page({
     swiperImageProps: {
       mode: 'scaleToFill'
     },
+    categoryList: [],
+    categoryPages: [],
+    categorySwiperCurrent: 0,
   },
 
   goodListPagination: {
@@ -39,6 +43,8 @@ Page({
   onShow() {
     //自定义tabbar加载，位置位于custom-tab-bar目录
     this.getTabBar().init();
+    // 每次进入首页刷新商品列表
+    this.init();
   },
 
   onLoad() {
@@ -60,6 +66,41 @@ Page({
 
   init() {
     this.loadHomePage();
+    this.loadCategoryData();
+  },
+
+  loadCategoryData() {
+    fetchCategoryList().then((tree = []) => {
+      // 提取一级分类（level=1 或 parentid=0/不存在）
+      const level1 = tree.filter(item => item.level === 1 || item.parentid === '0' || !item.parentid);
+      // 按每页10个分组
+      const pageSize = 10;
+      const pages = [];
+      for (let i = 0; i < level1.length; i += pageSize) {
+        pages.push(level1.slice(i, i + pageSize));
+      }
+      this.setData({
+        categoryList: level1,
+        categoryPages: pages,
+      });
+    }).catch(() => {
+      console.log('获取分类列表失败');
+    });
+  },
+
+  onCategorySwiperChange(e) {
+    this.setData({
+      categorySwiperCurrent: e.detail.current,
+    });
+  },
+
+  navToCategory(e) {
+    const { id } = e.currentTarget.dataset;
+    // 通过 Storage 传参给分类页（switchTab 不支持参数）
+    wx.setStorageSync('navCategoryId', id);
+    wx.switchTab({
+      url: '/pages/goods/category/index',
+    });
   },
 
   loadHomePage() {
@@ -150,12 +191,6 @@ Page({
       context: this,
       selector: '#t-toast',
       message: '点击加入购物车',
-    });
-  },
-
-  navToSearchPage() {
-    wx.navigateTo({
-      url: '/pages/goods/search/index'
     });
   },
 

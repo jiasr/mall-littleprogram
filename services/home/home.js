@@ -16,3 +16,7 @@ export function fetchHome() {
     })),
   }));
 }
+
+export function fetchCategoryList() {
+  return get('/v1/goodscatalog/tree');
+}

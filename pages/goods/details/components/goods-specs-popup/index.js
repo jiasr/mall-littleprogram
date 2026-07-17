@@ -310,15 +310,6 @@ Component({
       this.triggerEvent('addCart');
     },
 
-    buyNow() {
-      const { isAllSelectedSku } = this.data;
-      const { isStock } = this.properties;
-      if (!isStock) return;
-      this.triggerEvent('buyNow', {
-        isAllSelectedSku,
-      });
-    },
-
     // 总处理
     setBuyNum(buyNum) {
       this.setData({

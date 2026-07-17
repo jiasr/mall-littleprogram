@@ -11,15 +11,19 @@ page {
 }
 
 /* ====== 一级分类横滑栏 (chip风格) ====== */
-.top-bar {
+.top-bar-scroll {
   flex-shrink: 0;
+  height: 160rpx;
+  background: #fff;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+}
+
+.top-bar {
   display: flex;
   white-space: nowrap;
-  background: #fff;
   height: 160rpx;
   line-height: 1;
   padding: 0 8rpx;
-  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
 }
 
 .top-item {
@@ -30,15 +34,19 @@ page {
   gap: 8rpx;
   padding: 16rpx 20rpx;
   min-width: 120rpx;
+  height: 160rpx;
+  box-sizing: border-box;
   border-radius: 16rpx;
   transition: background 0.2s;
 }
 
 .top-more {
   display: inline-flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 60rpx;
+  gap: 4rpx;
+  width: 90rpx;
   height: 160rpx;
   flex-shrink: 0;
   position: sticky;
@@ -47,48 +55,56 @@ page {
   z-index: 2;
 }
 
-.top-more-icon {
-  font-size: 28rpx;
+.top-more-text {
+  font-size: 20rpx;
   color: #999;
-  transition: transform 0.2s;
+  line-height: 1;
+}
+
+.top-more-icon {
+  font-size: 24rpx;
+  color: #999;
+  line-height: 1;
 }
 
 .top-item--active {
   background: #FFF0EC;
 }
 
-.top-icon {
+.top-icon-box {
   width: 72rpx;
   height: 72rpx;
   border-radius: 50%;
-}
-
-.top-item--active .top-icon {
-  box-shadow: 0 0 0 4rpx #FA550F;
-}
-
-.top-icon-placeholder {
-  width: 72rpx;
-  height: 72rpx;
-  border-radius: 50%;
-  background: #FFF0EC;
+  overflow: hidden;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.top-item--active .top-icon-placeholder {
-  background: #FA550F;
+.top-icon-box--default {
+  background: linear-gradient(135deg, #FF9A76, #FA550F);
 }
 
-.top-icon-text {
+.top-item--active .top-icon-box {
+  box-shadow: 0 0 0 4rpx #FA550F;
+}
+
+.top-icon-img {
+  width: 72rpx;
+  height: 72rpx;
+  min-width: 72rpx;
+  min-height: 72rpx;
+  display: block;
+  flex-shrink: 0;
+  border-radius: 0;
+}
+
+.top-icon-default-text {
   font-size: 28rpx;
-  color: #FA550F;
-  font-weight: 600;
-}
-
-.top-item--active .top-icon-text {
   color: #fff;
+  font-weight: 600;
+  line-height: 1;
 }
 
 .top-label {
@@ -452,4 +468,13 @@ page {
 .popup-item--active .popup-label {
   color: #FA550F;
   font-weight: 600;
+}
+
+.popup-footer {
+  text-align: center;
+  padding: 24rpx 0 10rpx;
+  font-size: 26rpx;
+  color: #999;
+  border-top: 1rpx solid #f0f0f0;
+  margin-top: 16rpx;
 }

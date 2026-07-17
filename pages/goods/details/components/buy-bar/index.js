@@ -49,12 +49,6 @@ Component({
       this.triggerEvent('toAddCart');
     },
 
-    toBuyNow(e) {
-      const { isStock } = this.properties;
-      if (!isStock) return;
-      this.triggerEvent('toBuyNow', e);
-    },
-
     toNav(e) {
       const { url } = e.currentTarget.dataset;
       return this.triggerEvent('toNav', {
