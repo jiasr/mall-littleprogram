@@ -25,20 +25,22 @@ Page({
 
   onShow() {
     this.getTabBar().init();
-    this.loadCategory();
+    // 每次显示时检查是否有导航目标分类（switchTab 不支持参数，用 Storage 传参）
+    const navCategoryId = wx.getStorageSync('navCategoryId');
+    if (navCategoryId) {
+      wx.removeStorageSync('navCategoryId');
+      this._navCategoryId = navCategoryId;
+      this.loadCategory(true);
+    } else {
+      this.loadCategory();
+    }
   },
 
   onLoad() {
-    // 从 Storage 读取首页传递的分类 ID（switchTab 不支持参数）
-    const navCategoryId = wx.getStorageSync('navCategoryId');
-    if (navCategoryId) {
-      this._navCategoryId = navCategoryId;
-      wx.removeStorageSync('navCategoryId');
-    }
     this.loadCategory();
   },
 
-  async loadCategory() {
+  async loadCategory(hasTarget) {
     try {
       const res = await get('/v1/goodscatalog/tree');
       const topList = res || [];
@@ -54,7 +56,10 @@ Page({
           return;
         }
       }
-      this.switchTop(0);
+      // 没有目标时，仅在首次或明确需要刷新时才重置到第一个
+      if (hasTarget || this.data.goodsList.length === 0) {
+        this.switchTop(0);
+      }
     } catch (err) {
       console.error('加载分类失败', err);
     }
