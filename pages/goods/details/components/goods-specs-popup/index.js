@@ -307,6 +307,11 @@ Component({
     addCart() {
       const { isStock } = this.properties;
       if (!isStock) return;
+      const { isAllSelectedSku } = this.data;
+      if (!isAllSelectedSku) {
+        Toast({ context: this, selector: '#t-toast', message: '请选择规格', icon: '', duration: 1000 });
+        return;
+      }
       this.triggerEvent('addCart');
     },
 

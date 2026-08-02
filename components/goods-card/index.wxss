@@ -106,14 +106,8 @@
   padding: 0 24rpx;
 }
 
-.goods-card__origin-price {
-  white-space: nowrap;
-  font-weight: 700;
-  order: 2;
-  color: #bbbbbb;
-  font-size: 24rpx;
-  margin: 0 0 0 8rpx;
-}
+
+
 
 .goods-card__add-cart {
   order: 3;

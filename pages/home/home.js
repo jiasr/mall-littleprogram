@@ -186,11 +186,12 @@ Page({
     });
   },
 
-  goodListAddCartHandle() {
-    Toast({
-      context: this,
-      selector: '#t-toast',
-      message: '点击加入购物车',
+  goodListAddCartHandle(e) {
+    const { goods } = e.detail;
+    if (!goods || !goods.spuId) return;
+    // 跳转到详情页，由详情页处理规格选择和加购
+    wx.navigateTo({
+      url: `/pages/goods/details/index?spuId=${goods.spuId}`,
     });
   },
 

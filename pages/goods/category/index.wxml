@@ -18,7 +18,7 @@
       </view>
       <view class="top-more" bindtap="openPopup">
         <text class="top-more-text">展开</text>
-        <view class="top-more-icon">⌄</view>
+        <view class="top-more-icon">⌄⌄</view>
       </view>
     </view>
   </scroll-view>

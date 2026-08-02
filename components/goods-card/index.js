@@ -20,11 +20,7 @@ Component({
         if (!data) {
           return;
         }
-        let isValidityLinePrice = true;
-        if (data.originPrice && data.price && data.originPrice < data.price) {
-          isValidityLinePrice = false;
-        }
-        this.setData({ goods: data, isValidityLinePrice });
+        this.setData({ goods: data });
       },
     },
     currency: {
@@ -48,7 +44,7 @@ Component({
   data: {
     independentID: '',
     goods: { id: '' },
-    isValidityLinePrice: false,
+
   },
 
   lifetimes: {

@@ -102,6 +102,16 @@ Page({
       outOperateStatus: false,
       isSpuSelectPopupShow: true,
     });
+    // 单规格商品：自动选中第一个 SKU
+    const { details, skuArray } = this.data;
+    const specList = details?.specList || [];
+    if (specList.length === 0 && skuArray.length > 0) {
+      this.setData({
+        isAllSelectedSku: true,
+        selectItem: skuArray[0],
+        selectSkuSellsPrice: skuArray[0].price || 0,
+      });
+    }
   },
 
   toAddCart() {
@@ -151,7 +161,7 @@ Page({
       selectedAttrStr += `，${item.specValue}  `;
     });
     // eslint-disable-next-line array-callback-return
-    const skuItem = skuArray.filter((item) => {
+    const matched = skuArray.filter((item) => {
       let status = true;
       (item.specInfo || []).forEach((subItem) => {
         if (
@@ -164,6 +174,7 @@ Page({
       if (status) return item;
     });
     this.selectSpecsName(selectedSkuValues.length > 0 ? selectedAttrStr : '');
+    const skuItem = matched.length > 0 ? matched[0] : null;
     if (skuItem) {
       this.setData({
         selectItem: skuItem,
@@ -222,7 +233,7 @@ Page({
       Toast({ context: this, selector: '#t-toast', message: '请选择规格', icon: '', duration: 1000 });
       return;
     }
-    var skuId = selectItem && selectItem[0] && selectItem[0].skuId;
+    var skuId = selectItem && selectItem.skuId;
     if (!skuId) return;
     try {
       var res = await post('/v1/cart/add', { spuId: details.spuId, skuId: skuId, quantity: 1 });
