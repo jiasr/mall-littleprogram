@@ -2,6 +2,10 @@ import Dialog from 'tdesign-miniprogram/dialog/index';
 import Toast from 'tdesign-miniprogram/toast/index';
 import { fetchCartList, updateCart, deleteCart, clearCart } from '../../services/cart/cart';
 
+// 商品无图时的默认占位图
+const DEFAULT_THUMB =
+  'https://dummyimage.com/192x192/eeeeee/999999&text=%E6%9A%82%E6%97%A0%E5%9B%BE%E7%89%87';
+
 Page({
   data: {
     cartGroupData: { storeGoods: [], invalidGoodItems: [], isNotEmpty: false, totalAmount: 0 },
@@ -33,10 +37,11 @@ Page({
           storeStockShortage: false,
           promotionGoodsList: [{
             goodsPromotionList: validItems.map(g => ({
+              cartId: g.cartId,
               spuId: g.spuId,
               skuId: g.skuId,
               title: g.title,
-              thumb: g.thumb,
+              thumb: g.thumb || DEFAULT_THUMB,
               price: g.price,
               quantity: g.quantity,
               stockQuantity: g.stock,
@@ -47,11 +52,13 @@ Page({
           }],
         }],
         invalidGoodItems: invalidItems.map(g => ({
+          cartId: g.cartId,
           spuId: g.spuId,
           skuId: g.skuId,
           title: g.title,
-          thumb: g.thumb,
+          thumb: g.thumb || DEFAULT_THUMB,
           price: g.price,
+          specInfo: g.specInfo || [],
           invalidReason: g.invalidReason || '已失效',
         })),
         isNotEmpty: validItems.length > 0 || invalidItems.length > 0,

@@ -14,11 +14,11 @@ Component({
         for (const store of storeGoods) {
           for (const activity of (store.promotionGoodsList || [])) {
             for (const goods of (activity.goodsPromotionList || [])) {
-              goods.specs = (goods.specInfo || []).map((item) => item.specValue);
+              goods.specs = (goods.specInfo || []).map((item) => item.specValue).join(' / ');
             }
           }
           for (const goods of (store.shortageGoodsList || [])) {
-            goods.specs = (goods.specInfo || []).map((item) => item.specValue);
+            goods.specs = (goods.specInfo || []).map((item) => item.specValue).join(' / ');
           }
         }
 
@@ -29,7 +29,7 @@ Component({
       type: Array,
       observer(invalidGoodItems) {
         invalidGoodItems.forEach((goods) => {
-          goods.specs = goods.specInfo.map((item) => item.specValue); // 目前仅展示商品已选规格的值
+          goods.specs = (goods.specInfo || []).map((item) => item.specValue).join(' / '); // 展示商品已选规格的值
         });
         this.setData({ _invalidGoodItems: invalidGoodItems });
       },
@@ -78,8 +78,8 @@ Component({
       const { value } = e.detail;
       const { goods } = e.currentTarget.dataset;
       let num = value;
-      if (value > goods.stack) {
-        num = goods.stack;
+      if (value > (goods.stockQuantity || 0)) {
+        num = goods.stockQuantity || 0;
       }
       this.changeQuantity(num, goods);
     },

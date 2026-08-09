@@ -32,12 +32,15 @@ Page({
       this._navCategoryId = navCategoryId;
       this.loadCategory(true);
     } else {
-      this.loadCategory();
+      // 已加载过且非导航进入则不再重复请求分类树
+      if (!this.data.topList.length) {
+        this.loadCategory();
+      }
     }
   },
 
   onLoad() {
-    this.loadCategory();
+    // 分类树由 onShow 统一加载，避免与 onShow 重复请求
   },
 
   async loadCategory(hasTarget) {
@@ -171,9 +174,12 @@ Page({
     this.switchSub(i);
   },
 
-  // ====== 上拉加载更多 ======
+  // ====== 上拉加载更多（节流） ======
   onLoadMore() {
     if (this.data.loading || !this.data.hasMore) return;
+    const now = Date.now();
+    if (this._lastLoadMore && now - this._lastLoadMore < 300) return;
+    this._lastLoadMore = now;
     const { pageNum, activeSub, subList } = this.data;
     this.setData({ pageNum: pageNum + 1 });
     this.loadGoods(subList[activeSub]);

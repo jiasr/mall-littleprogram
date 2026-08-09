@@ -308,7 +308,9 @@ Component({
       const { isStock } = this.properties;
       if (!isStock) return;
       const { isAllSelectedSku } = this.data;
-      if (!isAllSelectedSku) {
+      const { specList } = this.properties;
+      // 无规格商品（specList 为空）视为已选规格，直接加购
+      if (!isAllSelectedSku && specList.length > 0) {
         Toast({ context: this, selector: '#t-toast', message: '请选择规格', icon: '', duration: 1000 });
         return;
       }

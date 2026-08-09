@@ -69,7 +69,7 @@
             data-spuid="{{item.spuId}}"
             bindtap="onGoodsTap"
           >
-            <t-image src="{{item.thumb}}" t-class="goods-img" mode="aspectFill" />
+            <t-image src="{{item.thumb}}" t-class="goods-img" mode="aspectFill" lazy loading="lazy" />
             <view class="goods-info">
               <view class="goods-tags" wx:if="{{item.tags && item.tags.length > 0}}">
                 <text wx:for="{{item.tags}}" wx:for-item="t" wx:key="*this" class="goods-tag">{{t}}</text>
