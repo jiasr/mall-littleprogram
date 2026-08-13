@@ -7,9 +7,30 @@
   currAuthStep="{{currAuthStep}}"
   bind:gotoUserEditPage="gotoUserEditPage"
 />
-<!-- 微信用户信息授权 -->
-<button class="user-profile-btn" open-type="chooseAvatar" bind:chooseavatar="onChooseAvatar" wx:if="{{showGetUserProfile}}">
-  获取头像
+<!-- 微信用户信息授权：头像 + 昵称 -->
+<view wx:if="{{showGetUserProfile}}" class="profile-auth-box">
+  <button class="user-profile-btn" open-type="chooseAvatar" bind:chooseavatar="onChooseAvatar">
+    获取头像
+  </button>
+  <view class="nickname-input-wrap">
+    <input
+      class="nickname-input"
+      type="nickname"
+      placeholder="请输入昵称"
+      placeholder-class="nickname-input-placeholder"
+      bind:blur="onNicknameChange"
+      bind:confirm="onNicknameChange"
+    />
+  </view>
+</view>
+<!-- 手机号授权绑定（手机号仅存库，不展示） -->
+<button
+  wx:if="{{!userInfo.phoneNumber}}"
+  class="phone-auth-btn"
+  open-type="getPhoneNumber"
+  bind:getphonenumber="onGetPhoneNumber"
+>
+  绑定手机号
 </button>
 <view class="content-wrapper">
   <view class="order-group-wrapper">
