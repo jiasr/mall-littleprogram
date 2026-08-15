@@ -61,17 +61,17 @@ Page({
       });
   },
 
-  // 选择头像：先上传到存储，拿到URL
+  // 选择头像：先上传到存储，存相对路径、用完整URL预览
   onChooseAvatar(e) {
     const tempUrl = e.detail.avatarUrl;
     if (!tempUrl) return;
-    // 先本地预览
+    // 先本地预览（临时路径）
     this.setData({ avatarUrl: tempUrl });
     uploadAvatar(tempUrl)
-      .then((publicUrl) => {
-        this.setData({ avatarUrl: publicUrl });
-        // 保存头像到后端
-        return updateUserProfile({ avatar: publicUrl });
+      .then(({ relative_url, public_url }) => {
+        // 预览用完整URL；存库用相对路径(避免硬编码IP/端口)
+        if (public_url) this.setData({ avatarUrl: public_url });
+        return updateUserProfile({ avatar: relative_url });
       })
       .catch(() => {
         Toast({ context: this, selector: '#t-toast', message: '头像上传失败', theme: 'error' });

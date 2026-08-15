@@ -33,9 +33,11 @@ export function uploadAvatar(tempFilePath) {
           const resp = JSON.parse(res.data);
           if (resp && resp.flag === true) {
             const data = resp.resData;
-            const url = (data && (data.public_url || (data.data && data.data.public_url))) || '';
-            if (url) {
-              resolve(url);
+            // relative_url 用于存库(避免硬编码)；public_url 供本地预览
+            const relativeUrl = (data && (data.relative_url || (data.data && data.data.relative_url))) || '';
+            const publicUrl = (data && (data.public_url || (data.data && data.data.public_url))) || '';
+            if (relativeUrl) {
+              resolve({ relative_url: relativeUrl, public_url: publicUrl });
             } else {
               reject({ message: '上传成功但未返回图片地址' });
             }
