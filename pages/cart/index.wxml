@@ -29,3 +29,15 @@
 <cart-empty wx:else bind:handleClick="onGotoHome" />
 <t-toast id="t-toast" />
 <t-dialog id="t-dialog" />
+
+<!-- 未登录(未绑定手机号)引导登录：全覆盖弹窗 -->
+<view wx:if="{{showLoginDialog}}" class="login-mask">
+  <view class="login-dialog">
+    <view class="login-dialog__title">温馨提示</view>
+    <view class="login-dialog__content">登录后才能查看购物车内容，是否前往登录？</view>
+    <view class="login-dialog__btns">
+      <view class="login-dialog__btn login-dialog__btn--cancel" bind:tap="onCancelLogin">取消</view>
+      <view class="login-dialog__btn login-dialog__btn--confirm" bind:tap="onGoLogin">前往登录</view>
+    </view>
+  </view>
+</view>

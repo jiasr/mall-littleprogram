@@ -1,6 +1,7 @@
 import Dialog from 'tdesign-miniprogram/dialog/index';
 import Toast from 'tdesign-miniprogram/toast/index';
 import { fetchCartList, updateCart, deleteCart, clearCart } from '../../services/cart/cart';
+import { fetchUserCenter } from '../../services/usercenter/fetchUsercenter';
 
 // 商品无图时的默认占位图
 const DEFAULT_THUMB =
@@ -9,15 +10,43 @@ const DEFAULT_THUMB =
 Page({
   data: {
     cartGroupData: { storeGoods: [], invalidGoodItems: [], isNotEmpty: false, totalAmount: 0 },
+    showLoginDialog: false,
   },
 
   onShow() {
     this.getTabBar().init();
+    this.checkLogin();
     this.refreshData();
   },
 
   onLoad() {
     this.refreshData();
+  },
+
+  // 未绑定手机号则弹"前往登录"全覆盖弹窗
+  async checkLogin() {
+    try {
+      const data = await fetchUserCenter();
+      const phone = (data && data.userInfo && data.userInfo.phoneNumber) || '';
+      const hasPhone = !!phone;
+      // 缓存手机号，供本页使用
+      this.hasBoundPhone = hasPhone;
+      if (!hasPhone && !this._loginDialogShown) {
+        this._loginDialogShown = true;
+        this.setData({ showLoginDialog: true });
+      }
+    } catch (e) {
+      // 接口失败不阻塞页面
+    }
+  },
+
+  onCancelLogin() {
+    this.setData({ showLoginDialog: false });
+  },
+
+  onGoLogin() {
+    this.setData({ showLoginDialog: false });
+    wx.navigateTo({ url: '/pages/login/index?from=cart' });
   },
 
   async refreshData() {

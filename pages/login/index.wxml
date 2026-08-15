@@ -1,0 +1,76 @@
+<view class="login-page">
+  <!-- 顶部标题 -->
+  <view class="login-header">
+    <view class="login-logo">商城</view>
+    <view class="login-title">手机号快速登录</view>
+    <view class="login-subtitle">登录后即可使用全部功能</view>
+  </view>
+
+  <!-- 协议勾选 -->
+  <view class="login-agreement">
+    <view class="checkbox-wrap" bind:tap="onToggleAgreement">
+      <view class="checkbox {{agreed ? 'checkbox--checked' : ''}}">
+        <view wx:if="{{agreed}}" class="checkbox__tick"></view>
+      </view>
+      <view class="agreement-text">
+        我已阅读并同意
+        <text class="agreement-link" catch:tap="onViewAgreement">《用户协议》</text>
+        和
+        <text class="agreement-link" catch:tap="onViewPrivacy">《隐私政策》</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 手机号快速登录 -->
+  <button
+    class="login-btn {{agreed ? 'login-btn--active' : 'login-btn--disabled'}}"
+    open-type="getPhoneNumber"
+    disabled="{{!agreed || phoneBound}}"
+    bind:getphonenumber="onGetPhoneNumber"
+  >
+    {{phoneBound ? '手机号已绑定' : '手机号快速登录'}}
+  </button>
+
+  <!-- 获取头像 + 昵称（一体卡片） -->
+  <view class="profile-card" wx:if="{{phoneBound}}">
+    <!-- 头像：整块可点选 -->
+    <button class="profile-card__avatar" open-type="chooseAvatar" bind:chooseavatar="onChooseAvatar">
+      <image wx:if="{{avatarUrl}}" src="{{avatarUrl}}" class="profile-card__avatar-img" mode="aspectFill" />
+      <view wx:else class="profile-card__avatar-ph">
+        <view class="profile-card__avatar-ph-icon">+</view>
+        <view class="profile-card__avatar-ph-text">头像</view>
+      </view>
+    </button>
+
+    <!-- 分隔线 -->
+    <view class="profile-card__divider"></view>
+
+    <!-- 昵称：可点填 -->
+    <view class="profile-card__nickname">
+      <view class="profile-card__nickname-label">昵称</view>
+      <input
+        class="profile-card__nickname-input"
+        type="nickname"
+        placeholder="请输入昵称"
+        placeholder-class="profile-card__nickname-ph"
+        value="{{nickName}}"
+        bind:input="onNicknameInput"
+        bind:blur="onNicknameChange"
+        bind:confirm="onNicknameChange"
+      />
+    </view>
+  </view>
+
+  <!-- 完成登录按钮 -->
+  <button
+    wx:if="{{phoneBound}}"
+    class="login-btn login-btn--active login-btn--complete"
+    bind:tap="onComplete"
+    loading="{{loading}}"
+  >
+    完成登录
+  </button>
+
+  <view class="login-tip" wx:if="{{!agreed}}">请先勾选并同意《用户协议》和《隐私政策》</view>
+</view>
+<t-toast id="t-toast" />

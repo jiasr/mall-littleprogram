@@ -1,4 +1,4 @@
-import { fetchUserCenter, updateUserProfile, bindWxPhone } from '../../services/usercenter/fetchUsercenter';
+import { fetchUserCenter } from '../../services/usercenter/fetchUsercenter';
 import Toast from 'tdesign-miniprogram/toast/index';
 
 const menuData = [
@@ -90,7 +90,7 @@ const getDefaultData = () => ({
   currAuthStep: 1,
   showKefu: true,
   versionNo: '',
-  showGetUserProfile: false,
+  showLoginDialog: false,
 });
 
 Page({
@@ -110,94 +110,6 @@ Page({
 
   init() {
     this.fetUseriInfoHandle();
-    // 检查是否已有昵称，没有则引导授权
-    if (this.data.userInfo.nickName === '正在登录...') {
-      this.setData({ showGetUserProfile: true });
-    }
-  },
-
-  // 选择头像（微信新版 chooseAvatar 按钮），选择后保存到后端
-  onChooseAvatar(e) {
-    const avatarUrl = e.detail.avatarUrl;
-    this.setData({
-      showGetUserProfile: false,
-      userInfo: Object.assign({}, this.data.userInfo, { avatarUrl }),
-    });
-    updateUserProfile({ avatar: avatarUrl })
-      .then(() => {
-        Toast({
-          context: this,
-          selector: '#t-toast',
-          message: '头像已更新',
-          theme: 'success',
-        });
-      })
-      .catch(() => {
-        Toast({
-          context: this,
-          selector: '#t-toast',
-          message: '头像更新失败',
-          theme: 'error',
-        });
-      });
-  },
-
-  // 昵称输入（新版 input type="nickname"），填写后保存到后端
-  onNicknameChange(e) {
-    const nickName = (e.detail.value || '').trim();
-    if (!nickName) return;
-    this.setData({
-      showGetUserProfile: false,
-      userInfo: Object.assign({}, this.data.userInfo, { nickName }),
-    });
-    updateUserProfile({ nickName })
-      .then(() => {
-        Toast({
-          context: this,
-          selector: '#t-toast',
-          message: '昵称已更新',
-          theme: 'success',
-        });
-      })
-      .catch(() => {
-        Toast({
-          context: this,
-          selector: '#t-toast',
-          message: '昵称更新失败',
-          theme: 'error',
-        });
-      });
-  },
-
-  // 手机号授权（getPhoneNumber），授权后绑定到后端
-  onGetPhoneNumber(e) {
-    const { code } = e.detail;
-    if (!code) {
-      Toast({
-        context: this,
-        selector: '#t-toast',
-        message: '已取消手机号授权',
-        icon: '',
-      });
-      return;
-    }
-    bindWxPhone(code)
-      .then((res) => {
-        Toast({
-          context: this,
-          selector: '#t-toast',
-          message: res && res.phone ? '手机号绑定成功' : '手机号绑定成功',
-          theme: 'success',
-        });
-      })
-      .catch(() => {
-        Toast({
-          context: this,
-          selector: '#t-toast',
-          message: '手机号绑定失败',
-          theme: 'error',
-        });
-      });
   },
 
   fetUseriInfoHandle() {
@@ -229,6 +141,12 @@ Page({
           currAuthStep: 2,
         });
         wx.stopPullDownRefresh();
+
+        // 未绑定手机号则弹"前往登录"全覆盖弹窗
+        if (!userInfo.phoneNumber && !this._loginDialogShown) {
+          this._loginDialogShown = true;
+          this.setData({ showLoginDialog: true });
+        }
       },
     );
   },
@@ -317,6 +235,17 @@ Page({
     } else {
       this.fetUseriInfoHandle();
     }
+  },
+
+  // 关闭登录引导弹窗
+  onCancelLogin() {
+    this.setData({ showLoginDialog: false });
+  },
+
+  // 前往登录
+  onGoLogin() {
+    this.setData({ showLoginDialog: false });
+    wx.navigateTo({ url: '/pages/login/index?from=usercenter' });
   },
 
   getVersionInfo() {

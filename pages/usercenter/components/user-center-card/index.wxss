@@ -34,6 +34,11 @@
   font-weight: bold;
   margin-left: 24rpx;
   margin-right: 16rpx;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .user-center-card__header__transparent {
   position: absolute;

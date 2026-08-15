@@ -18,6 +18,7 @@
       bind:click="onClickCell"
       t-class="t-cell-class"
       t-class-left="order-group__left"
+      t-class-note="name-note"
     />
     <t-cell
       title="性别"

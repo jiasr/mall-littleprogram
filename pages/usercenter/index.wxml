@@ -7,31 +7,6 @@
   currAuthStep="{{currAuthStep}}"
   bind:gotoUserEditPage="gotoUserEditPage"
 />
-<!-- 微信用户信息授权：头像 + 昵称 -->
-<view wx:if="{{showGetUserProfile}}" class="profile-auth-box">
-  <button class="user-profile-btn" open-type="chooseAvatar" bind:chooseavatar="onChooseAvatar">
-    获取头像
-  </button>
-  <view class="nickname-input-wrap">
-    <input
-      class="nickname-input"
-      type="nickname"
-      placeholder="请输入昵称"
-      placeholder-class="nickname-input-placeholder"
-      bind:blur="onNicknameChange"
-      bind:confirm="onNicknameChange"
-    />
-  </view>
-</view>
-<!-- 手机号授权绑定（手机号仅存库，不展示） -->
-<button
-  wx:if="{{!userInfo.phoneNumber}}"
-  class="phone-auth-btn"
-  open-type="getPhoneNumber"
-  bind:getphonenumber="onGetPhoneNumber"
->
-  绑定手机号
-</button>
 <view class="content-wrapper">
   <view class="order-group-wrapper">
     <t-order-group orderTagInfos="{{orderTagInfos}}" bind:onClickTop="jumpAllOrder" bind:onClickItem="jumpNav" />
@@ -59,6 +34,17 @@
   </view>
 </view>
 <view class="footer__version" wx:if="{{versionNo !== ''}}">当前版本 {{versionNo}}</view>
+<!-- 未绑定手机号引导登录：全覆盖弹窗 -->
+<view wx:if="{{showLoginDialog}}" class="login-mask">
+  <view class="login-dialog">
+    <view class="login-dialog__title">温馨提示</view>
+    <view class="login-dialog__content">登录后才能使用个人中心功能，是否前往登录？</view>
+    <view class="login-dialog__btns">
+      <view class="login-dialog__btn login-dialog__btn--cancel" bind:tap="onCancelLogin">取消</view>
+      <view class="login-dialog__btn login-dialog__btn--confirm" bind:tap="onGoLogin">前往登录</view>
+    </view>
+  </view>
+</view>
 <t-popup visible="{{showMakePhone}}" placement="bottom" bind:visible-change="closeMakePhone" data-index="2">
   <view class="popup-content">
     <view class="popup-title border-bottom-1px" wx:if="{{customerServiceInfo.serviceTimeDuration}}">
