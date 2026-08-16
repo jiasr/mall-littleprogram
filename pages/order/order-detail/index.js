@@ -5,7 +5,6 @@ import {
   fetchOrderDetail,
 } from '../../../services/order/orderDetail';
 import Toast from 'tdesign-miniprogram/toast/index';
-import { getAddressPromise } from '../../usercenter/address/list/util';
 
 Page({
   data: {
@@ -120,10 +119,7 @@ Page({
           'YYYY-MM-DD HH:mm',
         ), // 格式化订单创建时间
         countDownTime: this.computeCountDownTime(order),
-        addressEditable:
-          [OrderStatus.PENDING_PAYMENT, OrderStatus.PENDING_DELIVERY].includes(
-            order.orderStatus,
-          ) && order.orderSubStatus !== -1, // 订单正在取消审核时不允许修改地址（但是返回的状态码与待发货一致）
+        addressEditable: false, // 禁止修改收货地址
         isPaid: !!order.paidAt,
         invoiceStatus: this.datermineInvoiceStatus(order),
         invoiceDesc: order.invoiceDesc,
@@ -208,19 +204,7 @@ Page({
   },
 
   onEditAddressTap() {
-    getAddressPromise()
-      .then((address) => {
-        this.setData({
-          'order.logisticsVO.receiverName': address.name,
-          'order.logisticsVO.receiverPhone': address.phone,
-          '_order.receiverAddress': address.address,
-        });
-      })
-      .catch(() => {});
-
-    wx.navigateTo({
-      url: `/pages/usercenter/address/list/index?selectMode=1`,
-    });
+    // 已禁用地址修改功能
   },
 
   onOrderNumCopy() {
