@@ -108,14 +108,14 @@ Page({
         ),
         buttons: order.buttonVOs || [],
         createTime: order.createTime,
-        receiverAddress: this.composeAddress(order),
+        receiverAddress: order.consigneeAddress || '',
         groupInfoVo: order.groupInfoVo,
       };
       this.setData({
         order,
         _order,
         formatCreateTime: formatTime(
-          parseFloat(`${order.createTime}`),
+          order.createTime,
           'YYYY-MM-DD HH:mm',
         ), // 格式化订单创建时间
         countDownTime: this.computeCountDownTime(order),
@@ -153,18 +153,7 @@ Page({
     return order.invoiceStatus;
   },
 
-  // 拼接省市区
-  composeAddress(order) {
-    return [
-      //order.logisticsVO.receiverProvince,
-      order.logisticsVO.receiverCity,
-      order.logisticsVO.receiverCountry,
-      order.logisticsVO.receiverArea,
-      order.logisticsVO.receiverAddress,
-    ]
-      .filter((s) => !!s)
-      .join(' ');
-  },
+  // 拼接省市区（后端已拼接好 consigneeAddress，无需再拼接）
 
   getStoreDetail() {
     fetchBusinessTime().then((res) => {
