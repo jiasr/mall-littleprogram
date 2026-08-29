@@ -1,10 +1,20 @@
-import { formatTime } from '../../../utils/util';
+import { cosThumb, formatTime } from '../../../utils/util';
 import { OrderStatus, LogisticsIconMap } from '../config';
 import {
   fetchBusinessTime,
   fetchOrderDetail,
 } from '../../../services/order/orderDetail';
 import Toast from 'tdesign-miniprogram/toast/index';
+
+// 前端订单状态码 → 状态文字颜色（5待付款 10待发货 40待收货 50已完成 80已取消）
+// 仅待付款用主题红，其余统一黑色
+const STATUS_COLOR_MAP = {
+  5: '#fa4126',
+  10: '#333333',
+  40: '#333333',
+  50: '#333333',
+  80: '#333333',
+};
 
 Page({
   data: {
@@ -19,6 +29,8 @@ Page({
     logisticsNodes: [],
     /** 订单评论状态 */
     orderHasCommented: true,
+    showStatusPopup: false,
+    orderStatusLogs: [],
   },
 
   onLoad(query) {
@@ -81,6 +93,23 @@ Page({
     };
     return fetchOrderDetail(params).then((res) => {
       const order = res;
+      const goodsList = (order.orderItemVOs || []).map((goods) =>
+        Object.assign({}, goods, {
+          id: goods.id,
+          thumb: cosThumb(goods.goodsPictureUrl, 60),
+          title: goods.goodsName,
+          skuId: goods.skuId,
+          spuId: goods.spuId,
+          specs: (goods.specifications || []).map((s) => s.specValue),
+          specsText: (goods.specifications || [])
+            .map((s) => s.specValue)
+            .join(' / '),
+          price: goods.tagPrice ? goods.tagPrice : goods.actualPrice, // 商品销售单价, 优先取限时活动价
+          num: goods.buyQuantity,
+          titlePrefixTags: goods.tagText ? [{ text: goods.tagText }] : [],
+          buttons: goods.buttonVOs || [],
+        }),
+      );
       const _order = {
         id: order.orderId,
         orderNo: order.orderNo,
@@ -89,23 +118,11 @@ Page({
         storeName: order.storeName,
         status: order.orderStatus,
         statusDesc: order.orderStatusName,
+        statusColor: STATUS_COLOR_MAP[order.orderStatus] || '#333333',
         amount: order.paymentAmount,
         totalAmount: order.goodsAmountApp,
         logisticsNo: order.logisticsVO.logisticsNo,
-        goodsList: (order.orderItemVOs || []).map((goods) =>
-          Object.assign({}, goods, {
-            id: goods.id,
-            thumb: goods.goodsPictureUrl,
-            title: goods.goodsName,
-            skuId: goods.skuId,
-            spuId: goods.spuId,
-            specs: (goods.specifications || []).map((s) => s.specValue),
-            price: goods.tagPrice ? goods.tagPrice : goods.actualPrice, // 商品销售单价, 优先取限时活动价
-            num: goods.buyQuantity,
-            titlePrefixTags: goods.tagText ? [{ text: goods.tagText }] : [],
-            buttons: goods.buttonVOs || [],
-          }),
-        ),
+        goodsList,
         buttons: order.buttonVOs || [],
         createTime: order.createTime,
         receiverAddress: order.consigneeAddress || '',
@@ -126,6 +143,7 @@ Page({
         invoiceType:
           order.invoiceVO?.invoiceType === 5 ? '电子普通发票' : '不开发票', //是否开票 0-不开 5-电子发票
         logisticsNodes: this.flattenNodes(order.trajectoryVos || []),
+        orderStatusLogs: this.buildOrderStatusLogs(order),
       });
     });
   },
@@ -173,6 +191,49 @@ Page({
     return order.autoCancelTime > 1577808000000
       ? order.autoCancelTime - Date.now()
       : order.autoCancelTime;
+  },
+
+  // 根据订单字段拼装状态流转记录（下单/支付/发货/完成/取消）
+  buildOrderStatusLogs(order) {
+    const logs = [];
+    if (order.createTime) {
+      logs.push({ desc: '订单提交成功', time: order.createTime });
+    }
+    if (order.paidAt) {
+      logs.push({ desc: '支付成功', time: order.paidAt });
+    }
+    switch (order.orderStatus) {
+      case 40: // 待收货
+        logs.push({ desc: '商家已发货', time: '' });
+        break;
+      case 50: // 已完成
+        logs.push({ desc: '商家已发货', time: '' });
+        logs.push({ desc: '订单已完成', time: '' });
+        break;
+      case 80: // 已取消
+        logs.push({ desc: '订单已取消', time: '' });
+        break;
+      default:
+        break;
+    }
+    if (logs.length) {
+      logs[logs.length - 1].current = true; // 标记当前所处状态
+    }
+    return logs;
+  },
+
+  onShowOrderStatus() {
+    this.setData({ showStatusPopup: true });
+  },
+
+  onCloseStatusPopup() {
+    this.setData({ showStatusPopup: false });
+  },
+
+  onStatusPopupVisibleChange(e) {
+    if (e.detail && e.detail.visible === false) {
+      this.setData({ showStatusPopup: false });
+    }
   },
 
   onCountDownFinish() {

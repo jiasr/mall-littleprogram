@@ -2,36 +2,13 @@
   <!-- 页面内容 -->
   <view class="order-detail">
     <view class="header">
-      <view class="order-detail__header">
-        <view class="title">{{_order.statusDesc}}</view>
-        <view class="desc">
-          <block wx:if="{{ order.holdStatus === 1 }}">
-            <block wx:if="{{ order.groupInfoVo.residueTime > 0 }}">
-              拼团剩余
-              <t-count-down
-                time="{{order.groupInfoVo.residueTime}}"
-                format="HH小时mm分ss秒"
-                t-class="count-down"
-                bindfinish="onCountDownFinish"
-              />
-              <view>过时自动取消</view>
-            </block>
-          </block>
-          <block wx:elif="{{countDownTime === null}}">{{order.orderSatusRemark || ''}}</block>
-          <block wx:elif="{{countDownTime > 0}}">
-            剩
-            <t-count-down
-              time="{{countDownTime}}"
-              format="HH小时mm分ss秒"
-              t-class="count-down"
-              bindfinish="onCountDownFinish"
-            />
-            支付，过时订单将会取消
-          </block>
-          <block wx:else>超时未支付</block>
+      <!-- 订单状态入口 -->
+      <view class="order-status-bar" bindtap="onShowOrderStatus">
+        <view class="order-status-bar__left">
+          <text class="order-status-bar__label" style="color:{{_order.statusColor}}">{{_order.statusDesc || '订单状态'}}</text>
         </view>
+        <t-icon name="chevron-right" size="36rpx" color="#bbbbbb" />
       </view>
-
       <!-- 物流 -->
       <view class="order-logistics" wx:if="{{logisticsNodes[0]}}" bindtap="onDeliveryClick">
         <t-icon name="deliver" size="40rpx" class="logistics-icon" prefix="wr" />
@@ -41,8 +18,9 @@
         </view>
         <t-icon class="logistics-back" name="arrow_forward" size="36rpx" prefix="wr" />
       </view>
-      <view class="border-bottom" wx:if="{{logisticsNodes[0]}}" />
-      <!-- 收货地址 -->
+    </view>
+    <!-- 配送地址：独立区域 -->
+    <view class="address-block">
       <view class="order-logistics">
         <t-icon name="location" size="40rpx" class="logistics-icon" prefix="wr" />
         <view class="logistics-content">
@@ -52,26 +30,38 @@
         <view wx:if="{{false}}" class="edit-text" bindtap="onEditAddressTap"> 修改 </view>
       </view>
     </view>
-    <!-- 店铺及商品 -->
-    <order-card order="{{_order}}" use-top-right-slot>
-      <order-goods-card
-        wx:for="{{_order.goodsList}}"
-        wx:key="id"
-        wx:for-item="goods"
-        wx:for-index="gIndex"
-        goods="{{goods}}"
-        no-top-line="{{gIndex === 0}}"
-        bindtap="onGoodsCardTap"
-        data-index="{{gIndex}}"
-      >
-        <order-button-bar
-          slot="append-card"
-          class="goods-button-bar"
-          order="{{_order}}"
-          bindrefresh="onRefresh"
-          goodsIndex="{{gIndex}}"
-        />
-      </order-goods-card>
+    <!-- 店铺及商品：每个 SKU 一行，图左文右 -->
+    <order-card order="{{_order}}" use-top-right-slot wr-class="goods-card-block">
+      <view class="goods-block">
+        <view
+          class="single-goods"
+          wx:for="{{_order.goodsList}}"
+          wx:key="id"
+          bindtap="onGoodsCardTap"
+          data-index="{{index}}"
+        >
+          <view class="single-goods__img-wrap">
+            <t-image
+              class="single-goods__img"
+              t-class="single-goods__img"
+              src="{{item.thumb}}"
+              mode="aspectFill"
+              width="120rpx"
+              height="120rpx"
+              shape="round"
+              lazy-load
+            />
+            <view class="single-goods__num">x{{item.num}}</view>
+          </view>
+          <view class="single-goods__info">
+            <view class="single-goods__title">{{item.title}}</view>
+            <view wx:if="{{item.specsText}}" class="single-goods__specs">{{item.specsText}}</view>
+            <view class="single-goods__meta">
+              <price fill class="single-goods__price" price="{{item.price + ''}}" decimalSmaller />
+            </view>
+          </view>
+        </view>
+      </view>
       <view class="pay-detail">
         <view class="pay-item">
           <text>商品总额</text>
@@ -155,5 +145,29 @@
     <order-button-bar order="{{_order}}" bindrefresh="onRefresh" isBtnMax />
   </view>
 </t-pull-down-refresh>
+<t-popup
+  visible="{{showStatusPopup}}"
+  placement="bottom"
+  bind:visible-change="onStatusPopupVisibleChange"
+>
+  <view class="status-popup">
+    <view class="status-popup__header">
+      <text class="status-popup__title">订单状态</text>
+      <t-icon name="close" size="40rpx" color="#999999" bindtap="onCloseStatusPopup" />
+    </view>
+    <view class="status-popup__body">
+      <view class="status-node" wx:for="{{orderStatusLogs}}" wx:key="index">
+        <view class="status-node__side">
+          <view class="status-node__dot {{item.current ? 'status-node__dot--current' : ''}}"></view>
+          <view class="status-node__line"></view>
+        </view>
+        <view class="status-node__content">
+          <view class="status-node__desc {{item.current ? 'status-node__desc--current' : ''}}">{{item.desc}}</view>
+          <view class="status-node__time">{{item.time || '进行中'}}</view>
+        </view>
+      </view>
+    </view>
+  </view>
+</t-popup>
 <t-toast id="t-toast" />
 <t-dialog id="t-dialog" />

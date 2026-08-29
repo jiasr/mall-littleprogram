@@ -15,7 +15,7 @@
 			</block>
 			<slot wx:else name="top-left" />
 		</view>
-		<view wx:if="{{!useTopRightSlot}}" class="order-status">{{order.statusDesc}}</view>
+		<view wx:if="{{!useTopRightSlot}}" class="order-status" style="color:{{order.statusColor}}">{{order.statusDesc}}</view>
 		<slot wx:else name="top-right" />
 	</view>
 	<view class="slot-wrapper">

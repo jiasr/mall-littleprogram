@@ -3,7 +3,16 @@ import {
   fetchOrders,
   fetchOrdersCount,
 } from '../../../services/order/orderList';
-import { cosThumb } from '../../../utils/util';
+import { cosThumb, formatTime } from '../../../utils/util';
+
+// 兼容后端两种时间格式：'YYYY-MM-DD HH:mm:ss' 字符串 / 毫秒时间戳
+const formatCreateTime = (t) => {
+  if (!t) return '';
+  const s = String(t).trim();
+  const isTimestamp = /^-?\d+(\.\d+)?$/.test(s);
+  const text = formatTime(isTimestamp ? Number(s) : s, 'YYYY-MM-DD HH:mm:ss');
+  return /Invalid|NaN/.test(text) ? '' : text;
+};
 
 Page({
   page: {
@@ -60,9 +69,10 @@ Page({
         this.setData({ pullDownRefreshing: false });
         callback && callback();
       })
-      .catch((err) => {
+      .catch(() => {
+        // 刷新失败也要收起指示器，避免卡在下拉状态
         this.setData({ pullDownRefreshing: false });
-        Promise.reject(err);
+        callback && callback();
       });
   },
 
@@ -76,6 +86,16 @@ Page({
 
   // 前端状态码 → 后端状态码映射
   statusMap: { 5: 0, 10: 1, 40: 2, 50: 3 },
+
+  // 前端订单状态码 → 状态文字颜色（5待付款 10待发货 40待收货 50已完成 80已取消）
+  // 仅待付款用主题红，其余统一黑色
+  statusColorMap: {
+    5: '#fa4126',
+    10: '#333333',
+    40: '#333333',
+    50: '#333333',
+    80: '#333333',
+  },
 
   getOrderList(statusCode = -1, reset = false) {
     var params = {
@@ -94,6 +114,27 @@ Page({
         let orderList = [];
         if (res && res.data && res.data.orders) {
           orderList = (res.data.orders || []).map((order) => {
+            const goodsList = (order.orderItemVOs || []).map((goods) => ({
+              id: goods.id,
+              thumb: cosThumb(goods.goodsPictureUrl, 60),
+              title: goods.goodsName,
+              skuId: goods.skuId,
+              spuId: goods.spuId,
+              // 列表接口字段：specInfo/realPrice/goodsCount；详情接口为 specifications/tagPrice/actualPrice/buyQuantity，做兼容
+              specs: (goods.specInfo || goods.specifications || []).map(
+                (spec) => spec.specValue,
+              ),
+              price:
+                goods.realPrice !== undefined && goods.realPrice !== null
+                  ? goods.realPrice
+                  : goods.tagPrice || goods.actualPrice,
+              num:
+                goods.goodsCount !== undefined && goods.goodsCount !== null
+                  ? goods.goodsCount
+                  : goods.buyQuantity || 0,
+              titlePrefixTags: goods.tagText ? [{ text: goods.tagText }] : [],
+            }));
+            const firstGoods = goodsList[0];
             return {
               id: order.id,
               orderNo: order.orderNo,
@@ -102,38 +143,36 @@ Page({
               storeName: order.storeName,
               status: order.orderStatus,
               statusDesc: order.orderStatusName,
+              statusColor: this.statusColorMap[order.orderStatus] || '#333333',
               amount: order.paymentAmount,
               totalAmount: order.totalAmount,
-              logisticsNo: order.logisticsVO.logisticsNo,
+              logisticsNo: (order.logisticsVO || {}).logisticsNo || '',
               createTime: order.createTime,
-              goodsList: (order.orderItemVOs || []).map((goods) => ({
-                id: goods.id,
-                thumb: cosThumb(goods.goodsPictureUrl, 70),
-                title: goods.goodsName,
-                skuId: goods.skuId,
-                spuId: goods.spuId,
-                specs: (goods.specifications || []).map(
-                  (spec) => spec.specValue,
-                ),
-                price: goods.tagPrice ? goods.tagPrice : goods.actualPrice,
-                num: goods.buyQuantity,
-                titlePrefixTags: goods.tagText ? [{ text: goods.tagText }] : [],
-              })),
+              createTimeText: formatCreateTime(order.createTime),
+              goodsCount: goodsList.reduce(
+                (sum, g) => sum + (g.num || 0),
+                0,
+              ), // 总件数 = 各 SKU 数量累加
+              goodsList,
+              single: goodsList.length === 1,
+              firstGoods: firstGoods
+                ? {
+                    title: firstGoods.title,
+                    specsText: (firstGoods.specs || []).join(' / '),
+                    price: firstGoods.price,
+                    num: firstGoods.num,
+                    thumb: firstGoods.thumb,
+                  }
+                : null,
               buttons: order.buttonVOs || [],
               groupInfoVo: order.groupInfoVo,
               freightFee: order.freightFee,
             };
           });
         }
-        return new Promise((resolve) => {
-          if (reset) {
-            this.setData({ orderList: [] }, () => resolve());
-          } else resolve();
-        }).then(() => {
-          this.setData({
-            orderList: this.data.orderList.concat(orderList),
-            listLoading: orderList.length > 0 ? 0 : 2,
-          });
+        this.setData({
+          orderList: reset ? orderList : this.data.orderList.concat(orderList),
+          listLoading: orderList.length > 0 ? 0 : 2,
         });
       })
       .catch((err) => {
@@ -156,10 +195,11 @@ Page({
 
   getOrdersCount() {
     return fetchOrdersCount().then((res) => {
+      // 后端按 [待付款, 待发货, 待收货, 已完成] 顺序返回，与 tabs[1..] 一一对应（不含"全部"）
       const tabsCount = res.data || [];
       const { tabs } = this.data;
-      tabs.forEach((tab) => {
-        const tabCount = tabsCount.find((c) => c.tabType === tab.key);
+      tabs.forEach((tab, index) => {
+        const tabCount = index > 0 ? tabsCount[index - 1] : null;
         if (tabCount) {
           tab.info = tabCount.orderNum;
         }

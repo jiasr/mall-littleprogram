@@ -8,7 +8,8 @@
  *   wx.setStorageSync('baseUrlOverride', 'http://192.168.x.x:8560')
  * 恢复自动判断：wx.removeStorageSync('baseUrlOverride')
  */
-export const DEV_BASE_URL = 'http://localhost:8560';
+//export const DEV_BASE_URL = 'http://localhost:8560';
+export const DEV_BASE_URL = 'https://xianguo.online';
 export const PROD_BASE_URL = 'https://xianguo.online';
 
 export function getEnvBaseUrl() {
@@ -22,8 +23,8 @@ export function getEnvBaseUrl() {
     const accountInfo = wx.getAccountInfoSync();
     const envVersion = accountInfo.miniProgram && accountInfo.miniProgram.envVersion;
     // 双保险：开发者工具内 envVersion 固定为 develop，同时检测 devtools 平台
-    const devtools = wx.getDeviceInfo ? wx.getDeviceInfo().platform === 'devtools'
-      : wx.getSystemInfoSync().platform === 'devtools';
+    const devtools = wx.getDeviceInfo ? wx.getDeviceInfo().platform === 'devtools' :
+      wx.getSystemInfoSync().platform === 'devtools';
     if (envVersion === 'develop' || devtools) {
       console.log(`[config] 开发环境(${envVersion || 'devtools'}) → ${DEV_BASE_URL}`);
       return DEV_BASE_URL;
