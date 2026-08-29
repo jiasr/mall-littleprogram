@@ -44,6 +44,13 @@
   text-overflow: ellipsis;
 }
 
+.popup-sku-header .popup-sku-header__goods-info .popup-sku-header__stock {
+  margin-top: 8rpx;
+  font-size: 24rpx;
+  color: #999999;
+  line-height: 32rpx;
+}
+
 .popup-sku-header .popup-sku-header__goods-info .popup-sku__selected-spec {
   display: flex;
   color: #333333;
@@ -80,17 +87,18 @@
 
 .popup-sku-body .popup-sku-group-container .popup-sku-row .popup-sku-row__item {
   font-size: 24rpx;
-  color: #333;
-  min-width: 128rpx;
+  color: #333333;
+  min-width: 160rpx;
   height: 56rpx;
-  background-color: #f5f5f5;
+  background-color: #f7f7f7;
   border-radius: 8rpx;
-  border: 2rpx solid #f5f5f5;
+  border: 2rpx solid #e0e0e0;
   margin: 19rpx 26rpx 0 0;
-  padding: 0 16rpx;
+  padding: 0 20rpx;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  white-space: nowrap;
 }
 
 .popup-sku-body
@@ -99,15 +107,17 @@
   .popup-sku-row__item.popup-sku-row__item--active {
   border: 2rpx solid #fa4126;
   color: #fa4126;
-  background: rgba(255, 95, 21, 0.04);
+  background: rgba(250, 65, 38, 0.1);
+  font-weight: 500;
 }
 
 .popup-sku-body
   .popup-sku-group-container
   .popup-sku-row
   .disabled-sku-selected {
-  background: #f5f5f5 !important;
-  color: #cccccc;
+  background: #f0f0f0 !important;
+  color: #999999;
+  border-color: #e0e0e0;
 }
 
 .popup-sku-body .popup-sku-stepper-stock .popup-sku-stepper-container {
@@ -138,108 +148,9 @@
 .popup-sku-body
   .popup-sku-stepper-stock
   .popup-sku-stepper-container
-  .popup-stepper {
-  display: flex;
-  flex-flow: row nowrap;
-  align-items: center;
-  font-size: 28px;
-  height: 48rpx;
-  line-height: 62rpx;
-}
-
-.popup-sku-body
-  .popup-sku-stepper-stock
-  .popup-sku-stepper-container
-  .popup-stepper
-  .input-btn,
-.popup-sku-body
-  .popup-sku-stepper-stock
-  .popup-sku-stepper-container
-  .popup-stepper
-  .input-num-wrap {
-  position: relative;
-  height: 100%;
-  text-align: center;
-  background-color: #f5f5f5;
-  border-radius: 4rpx;
-}
-
-.popup-sku-body
-  .popup-sku-stepper-stock
-  .popup-sku-stepper-container
-  .popup-stepper
-  .input-num-wrap {
-  color: #282828;
-  display: flex;
-  max-width: 76rpx;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.popup-sku-body
-  .popup-sku-stepper-stock
-  .popup-sku-stepper-container
-  .popup-stepper
-  .input-num-wrap
-  .input-num {
-  height: 100%;
-  width: auto;
-  font-weight: 600;
-  font-size: 30rpx;
-}
-
-.popup-sku-body
-  .popup-sku-stepper-stock
-  .popup-sku-stepper-container
-  .popup-stepper
-  .input-btn {
-  width: 48rpx;
-}
-
-.popup-sku-body
-  .popup-sku-stepper-stock
-  .popup-sku-stepper-container
-  .popup-stepper
-  .popup-stepper__minus {
-  margin-right: 4rpx;
-  border-radius: 4rpx;
-  color: #9a979b;
+  .popup-sku-stepper-container__number {
   display: flex;
   align-items: center;
-  justify-content: center;
-}
-
-.popup-sku-body
-  .popup-sku-stepper-stock
-  .popup-sku-stepper-container
-  .popup-stepper
-  .popup-stepper__plus {
-  margin-left: 4rpx;
-  border-radius: 4rpx;
-  color: #9a979b;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.popup-sku-body
-  .popup-sku-stepper-stock
-  .popup-sku-stepper-container
-  .popup-stepper
-  .popup-stepper__plus::after {
-  width: 24rpx;
-  height: 3rpx;
-  background-color: #999999;
-}
-
-.popup-sku-body
-  .popup-sku-stepper-stock
-  .popup-sku-stepper-container
-  .popup-stepper
-  .popup-stepper__plus::before {
-  width: 3rpx;
-  height: 24rpx;
-  background-color: #999999;
 }
 
 .popup-sku-actions {
@@ -262,34 +173,17 @@
   width: 100%;
 }
 
-.popup-sku-actions .sku-operate .sku-operate-addCart {
-  background-color: #fa4126;
+.popup-sku-actions .sku-operate.sku-operate-addCart {
+  background-color: var(--td-button-default-bg-color, #fa4126);
   color: #fff;
   border-radius: 48rpx;
 }
 
-.popup-sku-actions .sku-operate .sku-operate-addCart.disabled {
+.popup-sku-actions .sku-operate.sku-operate-addCart.disabled {
   background: rgb(198, 198, 198);
   color: #fff;
 }
 
 .popup-sku-actions .sku-operate .selected-sku-btn {
   width: 100%;
-}
-
-.popup-container .single-confirm-btn {
-  border-radius: 48rpx;
-  color: #ffffff;
-  margin: 0 32rpx;
-  font-size: 32rpx;
-  height: 80rpx;
-  text-align: center;
-  line-height: 88rpx;
-  background-color: #fa4126;
-}
-
-.popup-container .single-confirm-btn.disabled {
-  font-size: 32rpx;
-  color: #fff;
-  background-color: #dddddd;
 }

@@ -178,14 +178,6 @@
     </view>
   </view>
 </view>
-<specs-popup
-  show="{{isShowSpecs}}"
-  title="{{currentGoods.title || ''}}"
-  price="{{currentGoods.price || ''}}"
-  thumb="{{utils.imgCut(currentGoods.thumb, 180, 180)}}"
-  specs="{{currentGoods.specs || []}}"
-  zIndex="{{999}}"
-  bindclose="hideSpecsPopup"
-/>
+<goods-specs-popup id="goodsSpecsPopup" bind:cartSkuChange="onCartSkuChange" />
 
 <t-toast id="t-toast" />

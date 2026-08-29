@@ -1,0 +1,10 @@
+{
+  "component": true,
+  "usingComponents": {
+    "t-popup": "/miniprogram_npm/tdesign-miniprogram/popup/popup",
+    "t-image": "/components/webp-image/index",
+    "t-stepper": "/miniprogram_npm/tdesign-miniprogram/stepper/stepper",
+    "t-icon": "/miniprogram_npm/tdesign-miniprogram/icon/icon",
+    "t-toast": "/miniprogram_npm/tdesign-miniprogram/toast/toast"
+  }
+}

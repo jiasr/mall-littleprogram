@@ -27,7 +27,14 @@
             price="{{minSalePrice}}"
             type="lighter"
           />
-          <view class="goods-price-up">起</view>
+          <text wx:if="{{minSalePrice !== maxSalePrice}}" class="goods-price-range-sep">~</text>
+          <price
+            wx:if="{{minSalePrice !== maxSalePrice}}"
+            price="{{maxSalePrice}}"
+            wr-class="class-goods-price"
+            symbol-class="class-goods-symbol"
+            type="lighter"
+          />
         </view>
         <view class="sold-num">已售{{soldNum}}</view>
       </view>
@@ -54,15 +61,6 @@
         </view>
       </view>
       <view class="goods-intro">{{intro}}</view>
-    </view>
-    <view class="spu-select" bindtap="showSkuSelectPopup">
-      <view class="label">已选</view>
-      <view class="content">
-        <view class="{{!selectedAttrStr ? 'tintColor' : ''}}">
-          {{selectedAttrStr ? buyNum : ''}}{{selectedAttrStr || '请选择'}}
-        </view>
-        <t-icon name="chevron-right" size="40rpx" color="#BBBBBB" />
-      </view>
     </view>
     <view wx:if="{{ commentsStatistics.commentCount > 0 }}" class="comments-wrap">
       <view class="comments-head" bindtap="navToCommentsListPage">
@@ -115,34 +113,32 @@
   </view>
   <goods-specs-popup
     id="goodsSpecsPopup"
-    show="{{isSpuSelectPopupShow}}"
-    title="{{details.title || ''}}"
-    src="{{specImg ? specImg : primaryImage}}"
-    specList="{{details.specList || []}}"
-    skuList="{{skuArray}}"
-    limitBuyInfo="{{details.limitInfo[0].text || ''}}"
     bind:closeSpecsPopup="handlePopupHide"
     bind:change="chooseSpecItem"
-    bind:changeNum="changeNum"
-    bind:addCart="addCart"
-    bind:specsConfirm="specsConfirm"
-    isStock="{{isStock}}"
-    outOperateStatus="{{outOperateStatus}}"
   >
     <view slot="goods-price">
       <view class="popup-sku__price">
-        <price
-          wx:if="{{!isAllSelectedSku || (!promotionSubCode && isAllSelectedSku)}}"
-          price="{{selectSkuSellsPrice ? selectSkuSellsPrice : minSalePrice }}"
-          wr-class="popup-sku__price-num"
-          symbol-class="popup-sku__price-symbol"
-        />
-        <price
-          wx:if="{{selectSkuSellsPrice === 0 && minSalePrice !== maxSalePrice && !isAllSelectedSku}}"
-          price="{{maxSalePrice}}"
-          wr-class="popup-sku__price-del"
-          type="delthrough"
-        />
+        <block wx:if="{{isAllSelectedSku}}">
+          <price
+            price="{{selectSkuSellsPrice || minSalePrice}}"
+            wr-class="popup-sku__price-num"
+            symbol-class="popup-sku__price-symbol"
+          />
+        </block>
+        <block wx:else>
+          <price
+            price="{{minSalePrice}}"
+            wr-class="popup-sku__price-num"
+            symbol-class="popup-sku__price-symbol"
+          />
+          <text wx:if="{{minSalePrice !== maxSalePrice}}" class="popup-sku__price-range-sep">~</text>
+          <price
+            wx:if="{{minSalePrice !== maxSalePrice}}"
+            price="{{maxSalePrice}}"
+            wr-class="popup-sku__price-num"
+            symbol-class="popup-sku__price-symbol"
+          />
+        </block>
       </view>
     </view>
   </goods-specs-popup>

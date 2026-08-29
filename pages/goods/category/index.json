@@ -3,6 +3,6 @@
   "usingComponents": {
     "t-image": "tdesign-miniprogram/image/image",
     "t-popup": "tdesign-miniprogram/popup/popup",
-    "goods-specs-popup": "../details/components/goods-specs-popup/index"
+    "goods-specs-popup": "/components/goods-specs-popup/index"
   }
 }

@@ -1,3 +1,5 @@
+import { getEnvBaseUrl } from './config';
+
 /** 统一请求封装
  *
  * 后端响应格式：
@@ -7,11 +9,13 @@
  */
 function request(method, path, data = {}) {
   const app = getApp();
-  const baseUrl = app ? app.globalData.baseUrl : 'http://localhost:8560';
+  const baseUrl = app ? app.globalData.baseUrl : getEnvBaseUrl();
   const token = app ? app.globalData.token || '' : '';
   const fullUrl = baseUrl + path;
 
-  console.log(`[request] ${method} ${fullUrl}`, JSON.stringify(data));
+  // 日志带环境标识，方便区分本地联调(DEV)与线上(PROD)请求
+  const isDev = /localhost|127\.0\.0\.1/.test(baseUrl);
+  console.log(`[request][${isDev ? 'DEV' : 'PROD'}] ${method} ${fullUrl}`, JSON.stringify(data));
 
   return new Promise((resolve, reject) => {
     wx.request({

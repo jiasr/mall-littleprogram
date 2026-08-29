@@ -2,6 +2,7 @@ import Dialog from 'tdesign-miniprogram/dialog/index';
 import Toast from 'tdesign-miniprogram/toast/index';
 
 import { dispatchCommitPay } from '../../../services/order/orderConfirm';
+import { getEnvBaseUrl } from '../../../utils/config';
 
 // 真实的提交支付
 export const commitPay = (params) => {
@@ -58,7 +59,7 @@ export const payFail = (payOrderInfo, resultMsg) => {
 function getPayParams(orderId) {
   console.log("/** 获取微信支付参数 */")
   var app = getApp();
-  var baseUrl = app ? app.globalData.baseUrl : 'http://localhost:8560';
+  var baseUrl = app ? app.globalData.baseUrl : getEnvBaseUrl();
   var token = app ? app.globalData.token || app.globalData.userid || '' : '';
   return new Promise(function(resolve, reject) {
     wx.request({
@@ -133,7 +134,7 @@ export const wechatPayOrder = (payOrderInfo) => {
 /** 通知后端确认支付（后端主动查微信验证后更新状态） */
 function confirmPay(orderId) {
   var app = getApp();
-  var baseUrl = app ? app.globalData.baseUrl : 'http://localhost:8560';
+  var baseUrl = app ? app.globalData.baseUrl : getEnvBaseUrl();
   var token = app ? app.globalData.token || app.globalData.userid || '' : '';
   return new Promise(function(resolve, reject) {
     wx.request({

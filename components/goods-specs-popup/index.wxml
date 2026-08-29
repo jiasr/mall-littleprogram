@@ -1,0 +1,53 @@
+<t-popup visible="{{show}}" placement="bottom" bind:visible-change="handlePopupHide">
+  <view class="popup-container">
+    <view class="popup-sku-header">
+      <t-image class="popup-sku-header__img" src="{{src}}" mode="aspectFill" shape="round" width="176rpx" height="176rpx" />
+      <view class="popup-sku-header__goods-info">
+        <view class="popup-sku__goods-name">{{title}}</view>
+        <view class="popup-sku-header__price">
+          <slot name="goods-price" />
+        </view>
+        <view wx:if="{{skuStockText}}" class="popup-sku-header__stock">{{skuStockText}}</view>
+        <view wx:if="{{selectSpecNameArr.length}}" class="popup-sku__selected-spec">
+          <view class="popup-sku__selected-item" wx:for="{{selectSpecNameArr}}" wx:key="*this">{{item}}</view>
+        </view>
+      </view>
+      <t-icon class="popup-close" name="close" size="34rpx" color="#999" bind:tap="handlePopupHide" />
+    </view>
+    <view class="popup-sku-body">
+      <view class="popup-sku-group-container">
+        <view class="popup-sku-row" wx:for="{{specList}}" wx:key="specId" wx:for-item="item" wx:for-index="index">
+          <view class="popup-sku-row__title">{{item.title}}</view>
+          <view
+            class="popup-sku-row__item {{item2.hasStockObj ? '' : 'disabled-sku-selected'}} {{selectedSkuMap[item.specId] === item2.specValueId ? 'popup-sku-row__item--active' : ''}}"
+            wx:for="{{item.specValueList}}"
+            wx:for-item="item2"
+            wx:for-index="index2"
+            wx:key="specValueId"
+            data-spec-id="{{item.specId}}"
+            data-spec-value-id="{{item2.specValueId}}"
+            bind:tap="toChooseItem"
+          >{{item2.specValue}}</view>
+        </view>
+      </view>
+      <view class="popup-sku-stepper-stock">
+        <view class="popup-sku-stepper-container">
+          <view class="popup-sku__stepper-title">
+            <text class="limit-text">{{limitBuyInfo}}</text>
+          </view>
+          <view class="popup-sku-stepper-container__number" wx:if="{{show}}">
+            <view class="popup-sku__stepper-title">数量</view>
+            <t-stepper default-value="{{buyNum}}" min="1" max="{{stepperMax}}" step="1" theme="filled" bind:change="handleBuyNumChange" />
+          </view>
+        </view>
+      </view>
+    </view>
+    <view class="popup-sku-actions">
+      <button
+        class="sku-operate sku-operate--full sku-operate-addCart {{isStock ? '' : 'disabled'}}"
+        bind:tap="handleAddCart"
+      >{{confirmText}}</button>
+    </view>
+    <t-toast id="t-toast" />
+  </view>
+</t-popup>

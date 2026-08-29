@@ -122,21 +122,14 @@
     </view>
   </t-popup>
 
-  <!-- 规格选择弹窗 -->
+  <!-- 规格选择弹窗（公共组件） -->
   <goods-specs-popup
-    show="{{specPopupShow}}"
-    title="{{specData.title || ''}}"
-    src="{{specData.thumb || ''}}"
-    specList="{{specData.specList || []}}"
-    skuList="{{specData.skuList || []}}"
+    id="specsPopup"
     bind:closeSpecsPopup="onSpecPopupClose"
-    bind:specsConfirm="onSpecConfirm"
-    bind:addCart="onSpecAddCart"
     bind:change="onSpecChange"
-    isStock="{{true}}"
   >
     <view slot="goods-price" class="popup-sku__price">
-      <text class="popup-price">¥{{specData.selectedPrice || specData.minPrice || '0'}}</text>
+      <text class="popup-price">¥{{specPopupPrice || goodsItemPrice}}</text>
     </view>
   </goods-specs-popup>
 </view>

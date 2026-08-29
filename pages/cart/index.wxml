@@ -10,6 +10,7 @@
     bindgoodsclick="goGoodsDetail"
     bindclearinvalidgoods="clearInvalidGoods"
     binddelete="onGoodsDelete"
+    bind:cartskuchange="onCartSkuChange"
   />
 
   <view class="gap" />

@@ -40,8 +40,6 @@ Component({
 
   data: {
     shortageImg,
-    isShowSpecs: false,
-    currentGoods: {},
     isShowToggle: false,
     _storeGoods: [],
     _invalidGoodItems: [],
@@ -135,20 +133,25 @@ Component({
       });
     },
 
-    // 展示规格popup
+    // 点击规格：打开公共规格弹窗（真实切换规格）
     specsTap(e) {
       this.isSpecsTap = true;
       const { goods } = e.currentTarget.dataset;
-      this.setData({
-        isShowSpecs: true,
-        currentGoods: goods,
-      });
+      if (!goods || !goods.skuList || goods.skuList.length === 0) {
+        Toast({
+          context: this,
+          selector: '#t-toast',
+          message: '该商品无可切换规格',
+        });
+        return;
+      }
+      const popup = this.selectComponent('#goodsSpecsPopup');
+      if (popup) popup.openSwitch(goods, goods);
     },
 
-    hideSpecsPopup() {
-      this.setData({
-        isShowSpecs: false,
-      });
+    // 规格切换确认 → 转发给页面处理
+    onCartSkuChange(e) {
+      this.triggerEvent('cartskuchange', e.detail);
     },
 
     goGoodsDetail(e) {

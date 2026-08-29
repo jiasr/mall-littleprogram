@@ -38,6 +38,20 @@ Component({
       type: Boolean,
       value: false,
     },
+    // 透传尺寸给内部 t-image；不传时保持原默认行为
+    width: {
+      type: null,
+      value: '',
+    },
+    height: {
+      type: null,
+      value: '',
+    },
+    // 透传形状给内部 t-image；不传时使用 t-image 默认 square
+    shape: {
+      type: String,
+      value: '',
+    },
   },
   data: {
     thumbHeight: 375,

@@ -1,6 +1,4 @@
-import Toast from 'tdesign-miniprogram/toast/index';
 import { fetchGood } from '../../../services/good/fetchGood';
-import { post } from '../../../utils/request';
 import { fetchActivityList } from '../../../services/activity/fetchActivityList';
 import {
   getGoodsDetailsCommentList,
@@ -72,11 +70,7 @@ Page({
     skuArray: [],
     primaryImage: '',
     specImg: '',
-    isSpuSelectPopupShow: false,
     isAllSelectedSku: false,
-    buyType: 0,
-    outOperateStatus: false, // 是否外层加入购物车
-    operateType: 0,
     selectSkuSellsPrice: 0,
     minSalePrice: 0,
     maxSalePrice: 0,
@@ -91,31 +85,17 @@ Page({
   },
 
   handlePopupHide() {
+    // 弹窗由公共组件内部管理显隐，页面仅重置操作状态
     this.setData({
-      isSpuSelectPopupShow: false,
+      isAllSelectedSku: false,
     });
-  },
-
-  showSkuSelectPopup(type) {
-    this.setData({
-      buyType: type || 0,
-      outOperateStatus: false,
-      isSpuSelectPopupShow: true,
-    });
-    // 单规格商品：自动选中第一个 SKU
-    const { details, skuArray } = this.data;
-    const specList = details?.specList || [];
-    if (specList.length === 0 && skuArray.length > 0) {
-      this.setData({
-        isAllSelectedSku: true,
-        selectItem: skuArray[0],
-        selectSkuSellsPrice: skuArray[0].price || 0,
-      });
-    }
   },
 
   toAddCart() {
-    this.showSkuSelectPopup(2);
+    const popup = this.selectComponent('#goodsSpecsPopup');
+    if (popup && popup.open) {
+      popup.open(this.data.details);
+    }
   },
 
   toNav(e) {
@@ -141,8 +121,13 @@ Page({
 
   chooseSpecItem(e) {
     const { specList } = this.data.details;
-    const { selectedSku, isAllSelectedSku } = e.detail;
-    if (!isAllSelectedSku) {
+    const { selectedSku, isAllSelectedSku, sku } = e.detail;
+    // 组件已按选中规格匹配好 SKU，直接采用其价格（列表/详情接口价格均为分）
+    if (isAllSelectedSku && sku && sku.price != null) {
+      this.setData({
+        selectSkuSellsPrice: sku.price,
+      });
+    } else {
       this.setData({
         selectSkuSellsPrice: 0,
       });
@@ -175,17 +160,10 @@ Page({
     });
     this.selectSpecsName(selectedSkuValues.length > 0 ? selectedAttrStr : '');
     const skuItem = matched.length > 0 ? matched[0] : null;
-    if (skuItem) {
-      this.setData({
-        selectItem: skuItem,
-        selectSkuSellsPrice: skuItem.price || 0,
-      });
-    } else {
-      this.setData({
-        selectItem: null,
-        selectSkuSellsPrice: 0,
-      });
-    }
+    // 价格由 chooseSpecItem 采用组件匹配结果，这里只负责选中项/图片
+    this.setData({
+      selectItem: skuItem || null,
+    });
     this.setData({
       specImg: skuItem && skuItem.skuImage ? skuItem.skuImage : primaryImage,
     });
@@ -227,46 +205,6 @@ Page({
     }
   },
 
-  async addCart() {
-    const { isAllSelectedSku, selectItem, details } = this.data;
-    if (!isAllSelectedSku) {
-      Toast({ context: this, selector: '#t-toast', message: '请选择规格', icon: '', duration: 1000 });
-      return;
-    }
-    var skuId = selectItem && selectItem.skuId;
-    if (!skuId) return;
-    try {
-      var res = await post('/v1/cart/add', { spuId: details.spuId, skuId: skuId, quantity: 1 });
-      if (res && res.success) {
-        Toast({ context: this, selector: '#t-toast', message: '已加入购物车', icon: 'check', duration: 1500 });
-        this.updateCartBadge(res.cartCount);
-      } else {
-        Toast({ context: this, selector: '#t-toast', message: res?.message || '加购失败', icon: 'none' });
-      }
-    } catch (e) {
-      Toast({ context: this, selector: '#t-toast', message: '加购失败', icon: 'none' });
-    }
-  },
-
-  updateCartBadge(count) {
-    var app = getApp();
-    app.globalData.cartCount = typeof count === 'number' ? count : (app.globalData.cartCount || 0);
-    if (typeof this.getTabBar === 'function') {
-      var tabBar = this.getTabBar();
-      if (tabBar && tabBar.updateCartBadge) tabBar.updateCartBadge();
-    }
-  },
-
-  specsConfirm() {
-    this.addCart();
-  },
-
-  changeNum(e) {
-    this.setData({
-      buyNum: e.detail.buyNum,
-    });
-  },
-
   closePromotionPopup() {
     this.setData({
       isShowPromotionPop: false,
@@ -305,8 +243,11 @@ Page({
         soldNum,
       } = details;
       skuList.forEach((item) => {
+        const priceInfo = item.priceInfo || [];
+        const salePrice = priceInfo.find((p) => p.priceType === 1) || priceInfo[0] || {};
         skuArray.push({
           skuId: item.skuId,
+          price: salePrice.price || 0,
           quantity: item.stockInfo ? item.stockInfo.stockQuantity : 0,
           specInfo: item.specInfo,
         });

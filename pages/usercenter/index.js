@@ -1,4 +1,8 @@
-import { fetchUserCenter } from '../../services/usercenter/fetchUsercenter';
+import {
+  fetchUserBaseInfo,
+  fetchUserOrderCount,
+  fetchUserCustomerService,
+} from '../../services/usercenter/fetchUsercenter';
 import Toast from 'tdesign-miniprogram/toast/index';
 
 const menuData = [
@@ -112,43 +116,38 @@ Page({
     this.fetUseriInfoHandle();
   },
 
-  fetUseriInfoHandle() {
-    fetchUserCenter().then(
-      ({
+  async fetUseriInfoHandle() {
+    try {
+      // 拆分后的轻量接口并行请求，互不阻塞
+      const [base, order, customer] = await Promise.all([
+        fetchUserBaseInfo(),
+        fetchUserOrderCount(),
+        fetchUserCustomerService(),
+      ]);
+      const { userInfo } = base;
+      const { orderTagInfos: orderInfo } = order;
+      const { customerServiceInfo } = customer;
+      const info = orderTagInfos.map((v, index) => ({
+        ...v,
+        ...orderInfo[index],
+      }));
+      this.setData({
         userInfo,
-        countsData,
-        orderTagInfos: orderInfo,
+        menuData,
+        orderTagInfos: info,
         customerServiceInfo,
-      }) => {
-        // eslint-disable-next-line no-unused-expressions
-        menuData?.[0].forEach((v) => {
-          countsData.forEach((counts) => {
-            if (counts.type === v.type) {
-              // eslint-disable-next-line no-param-reassign
-              v.tit = counts.num;
-            }
-          });
-        });
-        const info = orderTagInfos.map((v, index) => ({
-          ...v,
-          ...orderInfo[index],
-        }));
-        this.setData({
-          userInfo,
-          menuData,
-          orderTagInfos: info,
-          customerServiceInfo,
-          currAuthStep: 2,
-        });
-        wx.stopPullDownRefresh();
+        currAuthStep: 2,
+      });
+      wx.stopPullDownRefresh();
 
-        // 未绑定手机号则弹"前往登录"全覆盖弹窗
-        if (!userInfo.phoneNumber && !this._loginDialogShown) {
-          this._loginDialogShown = true;
-          this.setData({ showLoginDialog: true });
-        }
-      },
-    );
+      // 未绑定手机号则弹"前往登录"全覆盖弹窗
+      if (!userInfo.phoneNumber && !this._loginDialogShown) {
+        this._loginDialogShown = true;
+        this.setData({ showLoginDialog: true });
+      }
+    } catch (e) {
+      wx.stopPullDownRefresh();
+    }
   },
 
   onClickCell({ currentTarget }) {

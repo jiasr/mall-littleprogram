@@ -17,14 +17,12 @@ page {
 .goods-detail-page .goods-info .goods-price {
   display: flex;
   align-items: baseline;
+  color: #fa4126;
 }
 
-.goods-detail-page .goods-info .goods-price-up {
-  color: #fa4126;
-  font-size: 28rpx;
-  position: relative;
-  bottom: 4rpx;
-  left: 8rpx;
+.goods-detail-page .goods-info .goods-price .goods-price-range-sep {
+  font-size: 32rpx;
+  margin: 0 8rpx;
 }
 
 .goods-detail-page .goods-info .goods-price .class-goods-price {
@@ -270,8 +268,10 @@ page {
   color: #fa4126;
 }
 
-.popup-sku-header .popup-sku-header__goods-info .popup-sku__price .popup-sku__price-max-num {
-  font-size: 48rpx;
+.popup-sku-header .popup-sku-header__goods-info .popup-sku__price .popup-sku__price-range-sep {
+  margin: 0 8rpx;
+  font-size: 32rpx;
+  color: #fa4126;
 }
 
 .goods-detail-page .goods-head {

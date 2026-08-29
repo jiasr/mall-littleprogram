@@ -24,3 +24,13 @@ export function deleteCart(cartIds) {
 export function clearCart() {
   return post('/v1/cart/clear');
 }
+
+/** 批量同步购物车变更（乐观锁，version 不匹配后端返回 VERSION_CONFLICT） */
+export function syncCart(items, version = 0) {
+  return post('/v1/cart/sync', { items, version });
+}
+
+/** 登录后合并游客本地购物车 */
+export function mergeCart(items) {
+  return post('/v1/cart/merge', { items });
+}

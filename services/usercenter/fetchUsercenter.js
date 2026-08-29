@@ -1,7 +1,23 @@
 import { get, post } from '../../utils/request';
+import { getEnvBaseUrl } from '../../utils/config';
 
 export function fetchUserCenter() {
   return get('/v1/user/info');
+}
+
+/** 用户基础信息（昵称/头像/手机号），轻量接口，购物车等页面校验登录态用 */
+export function fetchUserBaseInfo() {
+  return get('/v1/user/base_info');
+}
+
+/** 各状态订单数量，个人中心订单入口角标用 */
+export function fetchUserOrderCount() {
+  return get('/v1/user/order_count');
+}
+
+/** 客服信息（服务时间/客服电话） */
+export function fetchUserCustomerService() {
+  return get('/v1/user/customer_service');
 }
 
 /** 更新用户头像/昵称 */
@@ -16,7 +32,7 @@ export function updateUserProfile(data) {
  */
 export function uploadAvatar(tempFilePath) {
   const app = getApp();
-  const baseUrl = app ? app.globalData.baseUrl : 'http://localhost:8560';
+  const baseUrl = app ? app.globalData.baseUrl : getEnvBaseUrl();
   const token = app ? app.globalData.token || '' : '';
 
   return new Promise((resolve, reject) => {
