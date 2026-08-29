@@ -19,3 +19,18 @@ export function getOrderDetail(orderId) {
 export function cancelOrder(orderId) {
   return post('/v1/order/cancel', { orderId });
 }
+
+/** 删除订单（仅已完成/已取消） */
+export function deleteOrder(orderId) {
+  return post('/v1/order/delete', { orderId });
+}
+
+/** 确认收货 */
+export function confirmOrder(orderId) {
+  return post('/v1/order/confirm', { orderId });
+}
+
+/** 提醒发货 */
+export function remindOrder(orderId) {
+  return post('/v1/order/remind', { orderId });
+}

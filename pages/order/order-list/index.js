@@ -1,4 +1,4 @@
-import { OrderStatus } from '../config';
+import { OrderStatus, buildOrderButtons } from '../config';
 import {
   fetchOrders,
   fetchOrdersCount,
@@ -164,7 +164,18 @@ Page({
                     thumb: firstGoods.thumb,
                   }
                 : null,
-              buttons: order.buttonVOs || [],
+              buttons:
+                order.buttonVOs && order.buttonVOs.length
+                  ? order.buttonVOs
+                  : buildOrderButtons(order.orderStatus),
+              debugButtons: (() => {
+                const b =
+                  order.buttonVOs && order.buttonVOs.length
+                    ? order.buttonVOs
+                    : buildOrderButtons(order.orderStatus);
+                console.log('[order-list] orderStatus=', order.orderStatus, 'buttons=', b.map((x) => x.name).join(','));
+                return b;
+              })(),
               groupInfoVo: order.groupInfoVo,
               freightFee: order.freightFee,
             };

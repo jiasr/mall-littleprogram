@@ -2,7 +2,7 @@ import Toast from 'tdesign-miniprogram/toast/index';
 import Dialog from 'tdesign-miniprogram/dialog/index';
 import { OrderButtonTypes } from '../../config';
 import { wechatPayOrder } from '../../order-confirm/pay';
-import { cancelOrder } from '../../../../services/order/order';
+import { cancelOrder, deleteOrder, confirmOrder, remindOrder } from '../../../../services/order/order';
 
 Component({
   options: {
@@ -51,15 +51,10 @@ Component({
             }
             return button;
           });
-        // 删除订单按钮单独挪到左侧
-        const deleteBtnIndex = buttonsRight.findIndex((b) => b.type === OrderButtonTypes.DELETE);
-        let buttonsLeft = [];
-        if (deleteBtnIndex > -1) {
-          buttonsLeft = buttonsRight.splice(deleteBtnIndex, 1);
-        }
+        // 所有按钮统一放到右侧按钮组
         this.setData({
           buttons: {
-            left: buttonsLeft,
+            left: [],
             right: buttonsRight,
           },
         });
@@ -96,6 +91,9 @@ Component({
           break;
         case OrderButtonTypes.CONFIRM:
           this.onConfirm(this.data.order);
+          break;
+        case OrderButtonTypes.REMIND:
+          this.onRemind(this.data.order);
           break;
         case OrderButtonTypes.PAY:
           this.onPay(this.data.order);
@@ -145,7 +143,7 @@ Component({
         .catch(() => {});
     },
 
-    onConfirm() {
+    onConfirm(order) {
       Dialog.confirm({
         title: '确认是否已经收到货？',
         content: '',
@@ -153,21 +151,42 @@ Component({
         cancelBtn: '取消',
       })
         .then(() => {
-          Toast({
-            context: this,
-            selector: '#t-toast',
-            message: '你确认了确认收货',
-            icon: 'check-circle',
+          confirmOrder(order.orderNo).then(() => {
+            Toast({
+              context: this,
+              selector: '#t-toast',
+              message: '确认收货成功',
+              icon: 'check-circle',
+            });
+            this.triggerEvent('refresh');
+          }).catch(() => {
+            Toast({
+              context: this,
+              selector: '#t-toast',
+              message: '确认收货失败',
+              icon: 'close-circle',
+            });
           });
         })
-        .catch(() => {
-          Toast({
-            context: this,
-            selector: '#t-toast',
-            message: '你取消了确认收货',
-            icon: 'check-circle',
-          });
+        .catch(() => {});
+    },
+
+    onRemind(order) {
+      remindOrder(order.orderNo).then(() => {
+        Toast({
+          context: this,
+          selector: '#t-toast',
+          message: '已提醒商家发货',
+          icon: 'check-circle',
         });
+      }).catch(() => {
+        Toast({
+          context: this,
+          selector: '#t-toast',
+          message: '提醒发货失败',
+          icon: 'close-circle',
+        });
+      });
     },
 
     onPay(order) {
@@ -184,7 +203,7 @@ Component({
         cancelBtn: '取消',
       })
         .then(() => {
-          cancelOrder(order.orderNo).then(() => {
+          deleteOrder(order.orderNo).then(() => {
             Toast({
               context: this,
               selector: '#t-toast',

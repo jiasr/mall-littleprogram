@@ -8,8 +8,8 @@
  *   wx.setStorageSync('baseUrlOverride', 'http://192.168.x.x:8560')
  * 恢复自动判断：wx.removeStorageSync('baseUrlOverride')
  */
-//export const DEV_BASE_URL = 'http://localhost:8560';
-export const DEV_BASE_URL = 'https://xianguo.online';
+export const DEV_BASE_URL = 'http://localhost:8560';
+//export const DEV_BASE_URL = 'https://xianguo.online';
 export const PROD_BASE_URL = 'https://xianguo.online';
 
 export function getEnvBaseUrl() {

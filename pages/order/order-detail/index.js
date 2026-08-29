@@ -1,5 +1,5 @@
 import { cosThumb, formatTime } from '../../../utils/util';
-import { OrderStatus, LogisticsIconMap } from '../config';
+import { OrderStatus, LogisticsIconMap, buildOrderButtons } from '../config';
 import {
   fetchBusinessTime,
   fetchOrderDetail,
@@ -123,7 +123,10 @@ Page({
         totalAmount: order.goodsAmountApp,
         logisticsNo: order.logisticsVO.logisticsNo,
         goodsList,
-        buttons: order.buttonVOs || [],
+        buttons:
+          order.buttonVOs && order.buttonVOs.length
+            ? order.buttonVOs
+            : buildOrderButtons(order.orderStatus),
         createTime: order.createTime,
         receiverAddress: order.consigneeAddress || '',
         groupInfoVo: order.groupInfoVo,

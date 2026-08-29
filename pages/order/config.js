@@ -43,6 +43,7 @@ export const OrderButtonTypes = {
   DELETE: 7, // 删除订单
   DELIVERY: 8, // 查看物流
   REBUY: 9, // 再次购买
+  REMIND: 10, // 提醒发货
   INVITE_GROUPON: 11, //邀请好友拼团
 };
 
@@ -91,4 +92,34 @@ export const LogisticsIconMap = {
   [LogisticsNodeTypes.RECEIVED]: 'check',
   [LogisticsNodeTypes.ADDRESS_CHANGED]: '',
   [LogisticsNodeTypes.IN_TRANSIT]: 'yunshuzhong',
+};
+
+// 后端不下发按钮时，前端按订单状态兜底生成操作按钮
+export const buildOrderButtons = (status) => {
+  switch (status) {
+    case OrderStatus.PENDING_PAYMENT: // 5 待付款
+      return [
+        { type: OrderButtonTypes.CANCEL, name: '取消订单', primary: false },
+        { type: OrderButtonTypes.PAY, name: '去付款', primary: true },
+      ];
+    case OrderStatus.COMPLETE: // 50 已完成
+      return [
+        { type: OrderButtonTypes.COMMENT, name: '评价', primary: false },
+        { type: OrderButtonTypes.DELETE, name: '删除订单', primary: false },
+      ];
+    case OrderStatus.PENDING_DELIVERY: // 10 待发货
+      return [
+        { type: OrderButtonTypes.REMIND, name: '提醒发货', primary: false },
+      ];
+    case OrderStatus.PENDING_RECEIPT: // 40 待收货
+      return [
+        { type: OrderButtonTypes.CONFIRM, name: '确认收货', primary: false },
+      ];
+    case OrderStatus.PAYMENT_TIMEOUT: // 80 已取消
+      return [
+        { type: OrderButtonTypes.DELETE, name: '删除订单', primary: false },
+      ];
+    default:
+      return [];
+  }
 };
