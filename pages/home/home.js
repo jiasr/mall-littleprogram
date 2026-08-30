@@ -29,6 +29,9 @@ Page({
     categoryList: [],
     categoryPages: [],
     categorySwiperCurrent: 0,
+    // 规格弹窗（公共组件）
+    specPopupPrice: '',
+    goodsItemPrice: '',
   },
 
   goodListPagination: {
@@ -146,14 +149,15 @@ Page({
     const pageSize = this.goodListPagination.num;
     let pageIndex = this.privateData.tabIndex * pageSize + this.goodListPagination.index + 1;
     if (fresh) {
-      pageIndex = 0;
+      pageIndex = 1;
     }
 
     try {
       const nextList = await fetchGoodsList(pageIndex, pageSize);
       this.setData({
         goodsList: fresh ? nextList : this.data.goodsList.concat(nextList),
-        goodsListLoadStatus: 0,
+        // 返回不足一页说明已全部加载完，底部提示"没有更多了"，不再继续请求
+        goodsListLoadStatus: nextList.length < pageSize ? 2 : 0,
       });
 
       this.goodListPagination.index = pageIndex;
@@ -188,11 +192,23 @@ Page({
 
   goodListAddCartHandle(e) {
     const { goods } = e.detail;
-    if (!goods || !goods.spuId) return;
-    // 跳转到详情页，由详情页处理规格选择和加购
-    wx.navigateTo({
-      url: `/pages/goods/details/index?spuId=${goods.spuId}`,
-    });
+    if (!goods || goods.spuId == null) return;
+    this.setData({ goodsItemPrice: goods.price != null ? (goods.price / 100).toFixed(2) : '' });
+    const popup = this.selectComponent('#specsPopup');
+    if (popup && popup.open) popup.open(goods);
+  },
+
+  onSpecPopupClose() {
+    this.setData({ specPopupPrice: '' });
+  },
+
+  onSpecChange(e) {
+    const { isAllSelectedSku, sku } = e.detail || {};
+    if (isAllSelectedSku && sku && sku.price != null) {
+      this.setData({ specPopupPrice: (sku.price / 100).toFixed(2) });
+    } else {
+      this.setData({ specPopupPrice: '' });
+    }
   },
 
   navToActivityDetail({

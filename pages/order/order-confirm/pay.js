@@ -36,11 +36,11 @@ export const payFail = (payOrderInfo, resultMsg) => {
     Dialog.confirm({
       title: '是否放弃付款',
       content: '商品可能很快就会被抢空哦，是否放弃付款？',
-      confirmBtn: '放弃',
-      cancelBtn: '继续付款',
+      confirmBtn: { content: '放弃', theme: 'light', variant: 'base' },
+      cancelBtn: { content: '继续付款', theme: 'primary', variant: 'base' },
     }).then(function() {
       wx.redirectTo({ url: '/pages/order/order-list/index' });
-    });
+    }).catch(function() {});
   } else {
     Toast({
       context: this,

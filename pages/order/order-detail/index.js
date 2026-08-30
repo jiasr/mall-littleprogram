@@ -6,14 +6,14 @@ import {
 } from '../../../services/order/orderDetail';
 import Toast from 'tdesign-miniprogram/toast/index';
 
-// 前端订单状态码 → 状态文字颜色（5待付款 10待发货 40待收货 50已完成 80已取消）
+// 订单状态码 → 状态文字颜色（0待付款 1待发货 2待收货 3已完成 4已取消）
 // 仅待付款用主题红，其余统一黑色
 const STATUS_COLOR_MAP = {
-  5: '#fa4126',
-  10: '#333333',
-  40: '#333333',
-  50: '#333333',
-  80: '#333333',
+  0: '#fa4126',
+  1: '#333333',
+  2: '#333333',
+  3: '#333333',
+  4: '#333333',
 };
 
 Page({
@@ -206,15 +206,15 @@ Page({
       logs.push({ desc: '支付成功', time: order.paidAt });
     }
     switch (order.orderStatus) {
-      case 40: // 待收货
-        logs.push({ desc: '商家已发货', time: '' });
+      case 2: // 待收货
+        logs.push({ desc: '商家已发货', time: order.shippedAt });
         break;
-      case 50: // 已完成
-        logs.push({ desc: '商家已发货', time: '' });
-        logs.push({ desc: '订单已完成', time: '' });
+      case 3: // 已完成
+        logs.push({ desc: '商家已发货', time: order.shippedAt });
+        logs.push({ desc: '订单已完成', time: order.completedAt });
         break;
-      case 80: // 已取消
-        logs.push({ desc: '订单已取消', time: '' });
+      case 4: // 已取消
+        logs.push({ desc: '订单已取消', time: order.canceledAt });
         break;
       default:
         break;

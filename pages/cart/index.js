@@ -2,7 +2,7 @@ import Dialog from 'tdesign-miniprogram/dialog/index';
 import Toast from 'tdesign-miniprogram/toast/index';
 import { fetchCartList, updateCart, deleteCart } from '../../services/cart/cart';
 import * as cartStore from '../../services/cart/cartStore';
-import { fetchUserBaseInfo } from '../../services/usercenter/fetchUsercenter';
+import { ensurePhoneLogin, isPhoneBound, goLogin } from '../../utils/auth';
 
 // 商品无图时的默认占位图
 const DEFAULT_THUMB =
@@ -32,7 +32,6 @@ Page({
     // 快照秒开：先用本地缓存渲染，再拉服务端最新替换
     const snapshot = cartStore.getSnapshot();
     if (snapshot && snapshot.validItems && snapshot.validItems.length > 0) {
-      this.isGuest = false;
       this._renderCart(snapshot);
     }
     this.refreshData();
@@ -47,20 +46,14 @@ Page({
     cartStore.flush();
   },
 
-  // 未绑定手机号则弹"前往登录"全覆盖弹窗
+  // 未绑定手机号则弹"前往登录"全覆盖弹窗（统一走 isPhoneBound 判断）
   async checkLogin() {
-    try {
-      const data = await fetchUserBaseInfo();
-      const phone = (data && data.userInfo && data.userInfo.phoneNumber) || '';
-      const hasPhone = !!phone;
-      // 缓存手机号，供本页使用
-      this.hasBoundPhone = hasPhone;
-      if (!hasPhone && !this._loginDialogShown) {
-        this._loginDialogShown = true;
-        this.setData({ showLoginDialog: true });
-      }
-    } catch (e) {
-      // 接口失败不阻塞页面
+    const hasPhone = await isPhoneBound();
+    // 缓存手机号，供本页使用
+    this.hasBoundPhone = hasPhone;
+    if (!hasPhone && !this._loginDialogShown) {
+      this._loginDialogShown = true;
+      this.setData({ showLoginDialog: true });
     }
   },
 
@@ -70,21 +63,39 @@ Page({
 
   onGoLogin() {
     this.setData({ showLoginDialog: false });
-    wx.navigateTo({ url: '/pages/login/index?from=cart' });
+    goLogin('cart');
+  },
+
+  // 后端会话失效/未登录：弹提示，确认后才跳转登录页（防止重复提示，跳转统一走 goLogin）
+  redirectToLogin() {
+    if (this._loginRedirecting) return;
+    this._loginRedirecting = true;
+    wx.showModal({
+      title: '提示',
+      content: '请先登录',
+      confirmText: '去登录',
+      cancelText: '取消',
+      success: (res) => {
+        this._loginRedirecting = false;
+        if (res.confirm) goLogin('cart');
+      },
+    });
   },
 
   async refreshData() {
+    // 统一登录校验：手机号未绑定不渲染购物车（引导由 checkLogin 的全覆盖弹窗承担，避免重复弹）
+    const logged = await ensurePhoneLogin({ from: 'cart', prompt: false });
+    if (!logged) return;
     try {
       const data = await fetchCartList();
-      // 未登录：渲染本地游客购物车
+      // 接口返回未登录/失败：引导登录
       if (!data || data.success === false) {
-        this.renderGuestCart();
+        this.redirectToLogin();
         return;
       }
 
       // 缓存服务端快照 + 版本号（Layer 1 持久化）
       cartStore.setSnapshot(data, data.version);
-      this.isGuest = false;
       this._renderCart(data);
       this.updateBadge(data);
     } catch (err) {
@@ -165,13 +176,6 @@ Page({
 
   // 修改本地购物车数据（UI 立即变化）并入变更队列，不立即请求后端
   applyLocalChange({ spuId, skuId, cartId, quantity, isSelected }) {
-    // 游客模式：全部落本地 guest 车
-    if (this.isGuest) {
-      if (quantity != null) cartStore.updateGuestItemQuantity(spuId, skuId, quantity);
-      if (isSelected != null) cartStore.setGuestSelected(spuId, skuId, isSelected);
-      this.renderGuestCart();
-      return;
-    }
     const path = this._goodsPath();
     const items = this.data.cartGroupData?.storeGoods[0]?.promotionGoodsList[0]?.goodsPromotionList || [];
     const item = items.find(g => g.spuId === spuId && g.skuId === skuId);
@@ -194,12 +198,6 @@ Page({
 
   // 本地删除商品（UI 立即移除）并入删除队列
   removeLocalGoods(goods) {
-    // 游客模式：直接删本地 guest 项
-    if (this.isGuest) {
-      cartStore.removeGuestItem(goods.spuId, goods.skuId);
-      this.renderGuestCart();
-      return;
-    }
     const path = this._goodsPath();
     const items = this.data.cartGroupData?.storeGoods[0]?.promotionGoodsList[0]?.goodsPromotionList || [];
     const idx = items.findIndex(g => g.spuId === goods.spuId && g.skuId === goods.skuId);
@@ -217,13 +215,6 @@ Page({
 
   // 全选/取消全选：本地先行 + 批量入队
   selectStoreLocal({ isSelected }) {
-    // 游客模式：全部落本地 guest 车
-    if (this.isGuest) {
-      const guest = cartStore.getGuestCart();
-      guest.forEach(g => cartStore.setGuestSelected(g.spuId, g.skuId, isSelected));
-      this.renderGuestCart();
-      return;
-    }
     const path = this._goodsPath();
     const items = this.data.cartGroupData?.storeGoods[0]?.promotionGoodsList[0]?.goodsPromotionList || [];
     items.forEach(g => { g.isSelected = isSelected; });
@@ -336,12 +327,6 @@ Page({
       Toast({ context: this, selector: '#t-toast', message: '请选择商品' });
       return;
     }
-    // 游客模式：结算前提示登录合并
-    if (this.isGuest) {
-      Toast({ context: this, selector: '#t-toast', message: '请先登录' });
-      this.onGoLogin();
-      return;
-    }
     // 结算前强制把本地未同步的变更刷到后端，避免拿本地旧数据下单（最重要兜底）
     const result = await cartStore.flush();
     if (result && result.conflict) {
@@ -351,42 +336,6 @@ Page({
     }
     wx.setStorageSync('order.goodsRequestList', JSON.stringify(selected));
     wx.navigateTo({ url: '/pages/order/order-confirm/index?type=cart' });
-  },
-
-  // 游客模式：渲染本地 guest 购物车
-  renderGuestCart() {
-    this.isGuest = true;
-    const guest = cartStore.getGuestCart();
-    const items = guest.map(g => ({
-      cartId: g.cartId,
-      spuId: g.spuId,
-      skuId: g.skuId,
-      title: g.title || '',
-      thumb: g.thumb || DEFAULT_THUMB,
-      price: g.price || 0,
-      quantity: g.quantity || 1,
-      stockQuantity: g.stock || 999,
-      isSelected: g.isSelected !== false,
-      specInfo: g.specInfo || [],
-    }));
-    const cartGroupData = {
-      storeGoods: [{
-        storeId: '1000',
-        storeName: '',
-        isSelected: items.length > 0 && items.every(g => g.isSelected),
-        storeStockShortage: false,
-        promotionGoodsList: [{ goodsPromotionList: items, shortageGoodsList: [] }],
-      }],
-      invalidGoodItems: [],
-      isNotEmpty: items.length > 0,
-      isAllSelected: items.length > 0 && items.every(g => g.isSelected),
-      totalAmount: items.reduce((s, g) => s + (g.isSelected ? (g.price || 0) * (g.quantity || 0) : 0), 0),
-      selectedGoodsCount: items.reduce((s, g) => s + (g.isSelected ? (g.quantity || 0) : 0), 0),
-    };
-    this.setData({ cartGroupData });
-    const count = items.reduce((s, g) => s + (g.quantity || 0), 0);
-    const app = getApp();
-    if (app.setCartCount) app.setCartCount(count);
   },
 
   onGotoHome() {

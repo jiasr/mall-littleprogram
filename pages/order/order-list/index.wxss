@@ -101,6 +101,12 @@ wr-order-goods-card:not(:first-child) .wr-goods-card {
   font-size: 22rpx;
   line-height: 40rpx;
 }
+
+.page-container .order-status-time {
+  color: #999999;
+  font-size: 20rpx;
+  margin-left: 16rpx;
+}
 .t-class-indicator {
   color: #b9b9b9 !important;
 }

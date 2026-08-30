@@ -22,6 +22,9 @@ Page({
     keywords: '',
     loadMoreStatus: 0,
     loading: true,
+    // 规格弹窗（公共组件）
+    specPopupPrice: '',
+    goodsItemPrice: '',
   },
 
   total: 0,
@@ -159,12 +162,25 @@ Page({
     this.init(false);
   },
 
-  handleAddCart() {
-    Toast({
-      context: this,
-      selector: '#t-toast',
-      message: '点击加购',
-    });
+  handleAddCart(e) {
+    const { goods } = e.detail;
+    if (!goods || goods.spuId == null) return;
+    this.setData({ goodsItemPrice: goods.price != null ? (goods.price / 100).toFixed(2) : '' });
+    const popup = this.selectComponent('#specsPopup');
+    if (popup && popup.open) popup.open(goods);
+  },
+
+  onSpecPopupClose() {
+    this.setData({ specPopupPrice: '' });
+  },
+
+  onSpecChange(e) {
+    const { isAllSelectedSku, sku } = e.detail || {};
+    if (isAllSelectedSku && sku && sku.price != null) {
+      this.setData({ specPopupPrice: (sku.price / 100).toFixed(2) });
+    } else {
+      this.setData({ specPopupPrice: '' });
+    }
   },
 
   gotoGoodsDetail(e) {

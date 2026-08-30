@@ -29,8 +29,3 @@ export function clearCart() {
 export function syncCart(items, version = 0) {
   return post('/v1/cart/sync', { items, version });
 }
-
-/** 登录后合并游客本地购物车 */
-export function mergeCart(items) {
-  return post('/v1/cart/merge', { items });
-}

@@ -43,6 +43,9 @@
     >
       <view slot="top-left" class="order-time">
         {{order.createTimeText}}
+        <text wx:if="{{order.statusTimeText && order.statusTimeText !== order.createTimeText}}" class="order-status-time">
+          {{order.statusTimeText}}
+        </text>
       </view>
       <!-- 单件商品：左侧图 + 右侧标题/规格/数量 -->
       <view wx:if="{{order.single}}" class="single-goods">

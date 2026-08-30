@@ -5,7 +5,7 @@ page {
 
 .goods-detail-page .goods-info {
   margin: 0 auto;
-  padding: 26rpx 0 28rpx 30rpx;
+  padding: 36rpx 0 28rpx 30rpx;
   background-color: #fff;
 }
 
@@ -96,7 +96,7 @@ page {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 20rpx;
+  margin-top: 32rpx;
 }
 
 .goods-detail-page .goods-info .goods-title .goods-name {
@@ -204,7 +204,7 @@ page {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 30rpx 20rpx;
+  padding: 40rpx 20rpx 48rpx;
 }
 
 .goods-detail-page .desc-content__title .img {

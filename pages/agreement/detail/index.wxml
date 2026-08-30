@@ -1,0 +1,8 @@
+<view class="agreement-page">
+  <view wx:if="{{loading}}" class="agreement-page__status">加载中...</view>
+  <view wx:elif="{{empty}}" class="agreement-page__status">暂未发布内容</view>
+  <view wx:else class="agreement-page__body">
+    <view wx:if="{{title}}" class="agreement-page__title">{{title}}</view>
+    <rich-text class="agreement-page__content" nodes="{{content}}" />
+  </view>
+</view>

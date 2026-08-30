@@ -4,6 +4,7 @@ import {
   fetchUserCustomerService,
 } from '../../services/usercenter/fetchUsercenter';
 import Toast from 'tdesign-miniprogram/toast/index';
+import { setPhoneBound, goLogin } from '../../utils/auth';
 
 const menuData = [
   [
@@ -48,35 +49,35 @@ const orderTagInfos = [
     title: '待付款',
     iconName: 'wallet',
     orderNum: 0,
-    tabType: 5,
+    tabType: 0,
     status: 1,
   },
   {
     title: '待发货',
     iconName: 'deliver',
     orderNum: 0,
-    tabType: 10,
+    tabType: 1,
     status: 1,
   },
   {
     title: '待收货',
     iconName: 'package',
     orderNum: 0,
-    tabType: 40,
+    tabType: 2,
     status: 1,
   },
   {
     title: '待评价',
     iconName: 'comment',
     orderNum: 0,
-    tabType: 60,
+    tabType: 3,
     status: 1,
   },
   {
     title: '退款/售后',
     iconName: 'exchang',
     orderNum: 0,
-    tabType: 0,
+    tabType: 4,
     status: 1,
   },
 ];
@@ -140,6 +141,9 @@ Page({
       });
       wx.stopPullDownRefresh();
 
+      // 写入统一登录态缓存（手机号是否绑定），供其他入口校验直接命中
+      setPhoneBound(!!userInfo.phoneNumber);
+
       // 未绑定手机号则弹"前往登录"全覆盖弹窗
       if (!userInfo.phoneNumber && !this._loginDialogShown) {
         this._loginDialogShown = true;
@@ -202,7 +206,8 @@ Page({
   jumpNav(e) {
     const status = e.detail.tabType;
 
-    if (status === 0) {
+    if (status === 4) {
+      // 退款/售后
       wx.navigateTo({ url: '/pages/order/after-service-list/index' });
     } else {
       wx.navigateTo({ url: `/pages/order/order-list/index?status=${status}` });
@@ -241,10 +246,10 @@ Page({
     this.setData({ showLoginDialog: false });
   },
 
-  // 前往登录
+  // 前往登录（跳转统一走 goLogin）
   onGoLogin() {
     this.setData({ showLoginDialog: false });
-    wx.navigateTo({ url: '/pages/login/index?from=usercenter' });
+    goLogin('usercenter');
   },
 
   getVersionInfo() {

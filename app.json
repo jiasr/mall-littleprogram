@@ -29,6 +29,7 @@
     "pages/order/delivery-detail/index",
     "pages/order/invoice/index",
     "pages/usercenter/name-edit/index",
+    "pages/agreement/detail/index",
     "pages/login/index"
   ],
   "tabBar": {

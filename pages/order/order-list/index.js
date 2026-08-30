@@ -14,6 +14,18 @@ const formatCreateTime = (t) => {
   return /Invalid|NaN/.test(text) ? '' : text;
 };
 
+// 状态时间：按当前订单状态取对应的变更时间（0待付款/1待发货/2待收货/3已完成/4已取消）
+const formatStatusTime = (order) => {
+  const map = {
+    0: order.createTime,   // 待付款 → 下单时间
+    1: order.paidAt,       // 待发货(已付款) → 支付时间
+    2: order.shippedAt,    // 待收货 → 发货时间
+    3: order.completedAt,  // 已完成 → 完成时间
+    4: order.canceledAt,   // 已取消 → 取消时间
+  };
+  return formatCreateTime(map[order.orderStatus] || order.createTime);
+};
+
 Page({
   page: {
     size: 5,
@@ -84,17 +96,14 @@ Page({
     this.refreshList(status);
   },
 
-  // 前端状态码 → 后端状态码映射
-  statusMap: { 5: 0, 10: 1, 40: 2, 50: 3 },
-
-  // 前端订单状态码 → 状态文字颜色（5待付款 10待发货 40待收货 50已完成 80已取消）
-  // 仅待付款用主题红，其余统一黑色
+  // 状态码已与后端统一（0待付款 1待发货 2待收货 3已完成 4已取消），筛选时直接透传
+  // 订单状态码 → 状态文字颜色，仅待付款用主题红，其余统一黑色
   statusColorMap: {
-    5: '#fa4126',
-    10: '#333333',
-    40: '#333333',
-    50: '#333333',
-    80: '#333333',
+    0: '#fa4126',
+    1: '#333333',
+    2: '#333333',
+    3: '#333333',
+    4: '#333333',
   },
 
   getOrderList(statusCode = -1, reset = false) {
@@ -105,7 +114,7 @@ Page({
       },
     };
     if (statusCode !== -1) {
-      params.parameter.orderStatus = this.statusMap[statusCode] !== undefined ? this.statusMap[statusCode] : statusCode;
+      params.parameter.orderStatus = statusCode;
     }
     this.setData({ listLoading: 1 });
     return fetchOrders(params)
@@ -149,6 +158,7 @@ Page({
               logisticsNo: (order.logisticsVO || {}).logisticsNo || '',
               createTime: order.createTime,
               createTimeText: formatCreateTime(order.createTime),
+              statusTimeText: formatStatusTime(order),
               goodsCount: goodsList.reduce(
                 (sum, g) => sum + (g.num || 0),
                 0,

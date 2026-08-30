@@ -5,6 +5,7 @@
     "t-image": "/components/webp-image/index",
     "t-icon": "tdesign-miniprogram/icon/icon",
     "count-down": "tdesign-miniprogram/count-down/count-down",
-    "goods-list": "/components/goods-list/index"
+    "goods-list": "/components/goods-list/index",
+    "goods-specs-popup": "/components/goods-specs-popup/index"
   }
 }

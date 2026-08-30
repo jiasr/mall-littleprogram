@@ -1,0 +1,28 @@
+.agreement-page {
+  min-height: 100vh;
+  background: #fff;
+  padding: 40rpx 32rpx 60rpx;
+  box-sizing: border-box;
+}
+
+.agreement-page__status {
+  padding: 160rpx 0;
+  text-align: center;
+  color: #999;
+  font-size: 28rpx;
+}
+
+.agreement-page__title {
+  font-size: 34rpx;
+  font-weight: 600;
+  color: #333;
+  text-align: center;
+  margin-bottom: 32rpx;
+}
+
+.agreement-page__content {
+  font-size: 28rpx;
+  color: #555;
+  line-height: 1.7;
+  word-break: break-all;
+}

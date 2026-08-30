@@ -199,19 +199,11 @@ Page({
     this.setData({ goodsItemPrice: item.price || '' });
     const popup = this.selectComponent('#specsPopup');
     if (popup && popup.open) {
-      popup.open(item);
-    }
-  },
-
-  // 加购按钮（单规格商品，快捷加购不弹窗）
-  onAddCart(e) {
-    const spuId = e.currentTarget.dataset.spuid;
-    const item = this.data.goodsList.find(g => g.spuId === spuId);
-    const skuList = item?.skuList || [];
-    if (skuList.length === 0) return;
-    const popup = this.selectComponent('#specsPopup');
-    if (popup && popup.quickAdd) {
-      popup.quickAdd(item);
+      // 单 SKU 商品视为无规格：打开弹窗即自动选中，可直接设置数量
+      const payload = item.skuList.length === 1
+        ? { ...item, specList: [], skuList: item.skuList.map(s => ({ ...s, specInfo: [] })) }
+        : item;
+      popup.open(payload);
     }
   },
 

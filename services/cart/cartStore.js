@@ -3,7 +3,7 @@
  *
  * 三层缓存：
  *  Layer 0 页面 data        —— 由页面自行维护，操作即时生效
- *  Layer 1 wx.storage       —— 本 store 负责：服务端快照 cart.cache / 变更队列 cart.pending / 游客车 cart.guest / 版本号 cart.version
+ *  Layer 1 wx.storage       —— 本 store 负责：服务端快照 cart.cache / 变更队列 cart.pending / 版本号 cart.version
  *  Layer 2 服务端           —— 权威数据源
  *
  * 变更链路：页面操作 → enqueue()（写 pending 落盘，同商品去重以最后一次为准）
@@ -12,11 +12,10 @@
  *
  * 兜底：App 启动 / 购物车页 onShow 检查 pending 非空自动补提交，进程被杀不丢变更
  */
-import { syncCart, mergeCart } from './cart';
+import { syncCart } from './cart';
 
 const PENDING_KEY = 'cart.pending';
 const VERSION_KEY = 'cart.version';
-const GUEST_KEY = 'cart.guest';
 const CACHE_KEY = 'cart.cache';
 
 /** 防抖延迟：连续操作停止 800ms 后才统一提交后端 */
@@ -193,95 +192,4 @@ export function getSnapshot() {
   return _state.cache;
 }
 
-// ====== 游客本地购物车 ======
 
-export function getGuestCart() {
-  return _safeGet(GUEST_KEY) || [];
-}
-
-function _persistGuest(list) {
-  _safeSet(GUEST_KEY, list);
-}
-
-/** 游客加购（已存在则叠加数量） */
-export function addGuestItem(item) {
-  const list = getGuestCart();
-  const key = item.spuId + '_' + item.skuId;
-  const idx = list.findIndex(g => g.spuId === item.spuId && g.skuId === item.skuId);
-  if (idx >= 0) {
-    list[idx].quantity = (list[idx].quantity || 0) + (item.quantity || 1);
-  } else {
-    list.push(
-      Object.assign(
-        {
-          cartId: 'guest_' + Date.now() + '_' + key,
-          quantity: 1,
-          isSelected: true,
-        },
-        item
-      )
-    );
-  }
-  _persistGuest(list);
-  return list;
-}
-
-/** 更新游客项数量（clamp 1~999） */
-export function updateGuestItemQuantity(spuId, skuId, quantity) {
-  const list = getGuestCart();
-  const item = list.find(g => g.spuId === spuId && g.skuId === skuId);
-  if (item) {
-    let q = parseInt(quantity, 10);
-    if (isNaN(q) || q < 1) q = 1;
-    if (q > 999) q = 999;
-    item.quantity = q;
-    _persistGuest(list);
-  }
-  return list;
-}
-
-/** 更新游客项选中状态 */
-export function setGuestSelected(spuId, skuId, isSelected) {
-  const list = getGuestCart();
-  const item = list.find(g => g.spuId === spuId && g.skuId === skuId);
-  if (item) {
-    item.isSelected = !!isSelected;
-    _persistGuest(list);
-  }
-  return list;
-}
-
-/** 删除游客项 */
-export function removeGuestItem(spuId, skuId) {
-  const list = getGuestCart().filter(g => !(g.spuId === spuId && g.skuId === skuId));
-  _persistGuest(list);
-  return list;
-}
-
-/** 登录成功后合并游客车到服务端（成功后清空本地） */
-export async function mergeGuestCartIfAny() {
-  const guest = getGuestCart();
-  if (!guest || guest.length === 0) return { merged: false };
-  try {
-    const res = await mergeCart(
-      guest.map(g => ({ spuId: g.spuId, skuId: g.skuId, quantity: g.quantity }))
-    );
-    if (res && res.success) {
-      _safeSet(GUEST_KEY, []);
-      if (res.version != null) _persistVersion(res.version);
-      return { merged: true, cartCount: res.cartCount };
-    }
-    return { merged: false };
-  } catch (e) {
-    return { merged: false };
-  }
-}
-
-/** 清空游客车（登录合并成功后调用） */
-export function clearGuest() {
-  try {
-    wx.removeStorageSync(GUEST_KEY);
-  } catch (e) {
-    // ignore
-  }
-}

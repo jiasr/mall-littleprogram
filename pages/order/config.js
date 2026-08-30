@@ -1,12 +1,13 @@
+// 订单状态码与后端统一（0待付款 1待发货 2待收货 3已完成 4已取消）
 export const OrderStatus = {
-  PENDING_PAYMENT: 5, // 待支付
-  PENDING_DELIVERY: 10, // 待发货
-  PENDING_RECEIPT: 40, // 待收货
-  COMPLETE: 50, // 已完成/待评价
-  PAYMENT_TIMEOUT: 80, // 已取消，支付超时
-  CANCELED_NOT_PAYMENT: 80, // 已取消，未支付主动取消
-  CANCELED_PAYMENT: 80, // 已取消，已支付主动取消
-  CANCELED_REJECTION: 80, // 已取消，拒收
+  PENDING_PAYMENT: 0, // 待支付
+  PENDING_DELIVERY: 1, // 待发货
+  PENDING_RECEIPT: 2, // 待收货
+  COMPLETE: 3, // 已完成/待评价
+  PAYMENT_TIMEOUT: 4, // 已取消，支付超时
+  CANCELED_NOT_PAYMENT: 4, // 已取消，未支付主动取消
+  CANCELED_PAYMENT: 4, // 已取消，已支付主动取消
+  CANCELED_REJECTION: 4, // 已取消，拒收
 };
 
 // 售后状态 10:待审核,20:已审核,30:已收货,40:收货异常,50:已完成,60:已关闭;
@@ -97,25 +98,25 @@ export const LogisticsIconMap = {
 // 后端不下发按钮时，前端按订单状态兜底生成操作按钮
 export const buildOrderButtons = (status) => {
   switch (status) {
-    case OrderStatus.PENDING_PAYMENT: // 5 待付款
+    case OrderStatus.PENDING_PAYMENT: // 0 待付款
       return [
         { type: OrderButtonTypes.CANCEL, name: '取消订单', primary: false },
         { type: OrderButtonTypes.PAY, name: '去付款', primary: true },
       ];
-    case OrderStatus.COMPLETE: // 50 已完成
+    case OrderStatus.COMPLETE: // 3 已完成
       return [
         { type: OrderButtonTypes.COMMENT, name: '评价', primary: false },
         { type: OrderButtonTypes.DELETE, name: '删除订单', primary: false },
       ];
-    case OrderStatus.PENDING_DELIVERY: // 10 待发货
+    case OrderStatus.PENDING_DELIVERY: // 1 待发货
       return [
         { type: OrderButtonTypes.REMIND, name: '提醒发货', primary: false },
       ];
-    case OrderStatus.PENDING_RECEIPT: // 40 待收货
+    case OrderStatus.PENDING_RECEIPT: // 2 待收货
       return [
         { type: OrderButtonTypes.CONFIRM, name: '确认收货', primary: false },
       ];
-    case OrderStatus.PAYMENT_TIMEOUT: // 80 已取消
+    case OrderStatus.PAYMENT_TIMEOUT: // 4 已取消
       return [
         { type: OrderButtonTypes.DELETE, name: '删除订单', primary: false },
       ];

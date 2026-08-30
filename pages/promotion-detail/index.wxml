@@ -72,5 +72,16 @@
 		/>
 	</view>
 	<t-toast id="t-toast" />
+
+	<!-- 规格选择弹窗（公共组件，点击商品加购图标打开） -->
+	<goods-specs-popup
+	  id="specsPopup"
+	  bind:closeSpecsPopup="onSpecPopupClose"
+	  bind:change="onSpecChange"
+	>
+	  <view slot="goods-price" style="margin-top: 8rpx;">
+	    <text style="font-size: 36rpx; color: #FA550F; font-weight: 700;">¥{{specPopupPrice || goodsItemPrice}}</text>
+	  </view>
+	</goods-specs-popup>
 </view>
 

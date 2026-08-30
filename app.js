@@ -47,16 +47,15 @@ App({
     this.updateCartBadge();
   },
 
-  // 登录后购物车全面校准：补提交未同步变更 → 合并游客车 → 拉真实件数校准徽标
+  // 登录后购物车全面校准：补提交未同步变更 → 拉真实件数校准徽标
   afterLoginCartSync() {
     const that = this;
     cartStore.init(this.globalData.userid);
     // 1. 补提交上次进程被杀遗留的本地变更
     cartStore
       .flush()
-      .then(() => cartStore.mergeGuestCartIfAny())
       .then(() => {
-        // 3. 从服务端拉取真实件数校准徽标
+        // 2. 从服务端拉取真实件数校准徽标
         that.syncCartCount();
       });
   },

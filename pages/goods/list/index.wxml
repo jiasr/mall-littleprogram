@@ -50,5 +50,14 @@
     />
   </view>
   <load-more wx:if="{{goodsList.length > 0}}" status="{{loadMoreStatus}}" no-more-text="没有更多了" />
+  <goods-specs-popup
+    id="specsPopup"
+    bind:closeSpecsPopup="onSpecPopupClose"
+    bind:change="onSpecChange"
+  >
+    <view slot="goods-price" style="margin-top: 8rpx;">
+      <text style="font-size: 36rpx; color: #FA550F; font-weight: 700;">¥{{specPopupPrice || goodsItemPrice}}</text>
+    </view>
+  </goods-specs-popup>
 </view>
 <t-toast id="t-toast" />

@@ -1,6 +1,7 @@
 import Toast from 'tdesign-miniprogram/toast/index';
+import { fetchGood } from '../../services/good/fetchGood';
 import { addToCart } from '../../services/cart/cart';
-import * as cartStore from '../../services/cart/cartStore';
+import { ensurePhoneLogin } from '../../utils/auth';
 
 Component({
   options: {
@@ -44,8 +45,24 @@ Component({
   methods: {
     // ===== 对外 API =====
     // 打开规格选择弹窗（多规格商品）
-    open(goods) {
-      const normalized = this.normalizeGoods(goods);
+    async open(goods) {
+      // 统一登录校验：手机号未绑定不弹出规格弹窗，弹提示确认后再引导登录
+      const logged = await ensurePhoneLogin({ from: 'cart' });
+      if (!logged) return;
+      let target = goods;
+      if (!goods || goods.spuId == null) return;
+      // 列表数据未携带 SKU 时（如 simple-list），先拉取详情兜底
+      if (!goods.skuList || goods.skuList.length === 0) {
+        try {
+          const detail = await fetchGood(goods.spuId);
+          if (!detail || !detail.skuList || detail.skuList.length === 0) return;
+          target = { ...goods, ...detail };
+        } catch (err) {
+          console.error('[goods-specs-popup] 加载商品SKU失败', err);
+          return;
+        }
+      }
+      const normalized = this.normalizeGoods(target);
       if (!normalized || !normalized.skuList || normalized.skuList.length === 0) return;
       this.goods = normalized;
       this.initData();
@@ -98,14 +115,6 @@ Component({
       });
       // 预选当前购物车项对应规格
       if (cartItem && cartItem.skuId) this._preselectSku(cartItem.skuId);
-    },
-
-    // 快捷加购：不弹窗，直接加购第一个 SKU（单规格商品）
-    quickAdd(goods) {
-      const normalized = this.normalizeGoods(goods);
-      if (!normalized || !normalized.skuList || normalized.skuList.length === 0) return;
-      this.goods = normalized;
-      this.doAddCart(normalized.skuList[0].skuId, 1);
     },
 
     // ===== 数据归一化：兼容详情页(details)与列表页(item)商品结构 =====
@@ -387,27 +396,15 @@ Component({
         return;
       }
 
-      const app = getApp();
-      // 游客模式（未登录）：写入本地 guest 购物车，登录后自动合并服务端
-      if (!app.globalData.userid) {
-        const finalSku = skuList.find((s) => s.skuId === finalSkuId) || {};
-        cartStore.addGuestItem({
-          spuId: goods.spuId,
-          skuId: finalSkuId,
-          quantity: finalQuantity,
-          title: goods.title || '',
-          thumb: goods.primaryImage || '',
-          price: finalSku.price || 0,
-          stock: finalSku.quantity || 0,
-          specInfo: finalSku.specInfo || [],
-        });
-        app.addCartCount(finalQuantity);
+      // 统一登录校验（二次兜底）：未绑定手机号弹提示，确认后再引导登录
+      const logged = await ensurePhoneLogin({ from: 'cart' });
+      if (!logged) {
         this.setData({ show: false });
-        this.showCartGuide();
         return;
       }
 
       try {
+        const app = getApp();
         const res = await addToCart(goods.spuId, finalSkuId, finalQuantity);
         if (res && res.success) {
           // 全局购物车数量直接自增（徽标实时变动）

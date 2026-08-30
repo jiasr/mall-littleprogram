@@ -79,8 +79,8 @@
                 <view class="goods-price-row">
                   <text class="goods-price">¥{{item.price}}起</text>
                 </view>
-                <!-- 多规格：选规格 --><view class="goods-btn goods-btn--spec" wx:if="{{item.skuList && item.skuList.length > 1}}" catchtap="onSelectSpec" data-spuid="{{item.spuId}}">选规格</view>
-                <!-- 单规格：加入购物车 --><view class="goods-btn" wx:else catchtap="onAddCart" data-spuid="{{item.spuId}}">+</view>
+                <!-- 统一：购买（底部弹窗，可设置数量） -->
+                <view class="goods-btn goods-btn--spec" catchtap="onSelectSpec" data-spuid="{{item.spuId}}">购买</view>
               </view>
             </view>
           </view>

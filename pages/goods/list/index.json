@@ -7,6 +7,7 @@
     "goods-list": "/components/goods-list/index",
     "filter": "/components/filter/index",
     "filter-popup": "/components/filter-popup/index",
-    "load-more": "/components/load-more/index"
+    "load-more": "/components/load-more/index",
+    "goods-specs-popup": "/components/goods-specs-popup/index"
   }
 }

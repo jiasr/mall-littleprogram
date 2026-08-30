@@ -4,6 +4,8 @@ import {
   updateUserProfile,
   uploadAvatar,
 } from '../../services/usercenter/fetchUsercenter';
+import { fetchAgreement } from '../../services/agreement/fetchAgreement';
+import { setPhoneBound } from '../../utils/auth';
 
 Page({
   data: {
@@ -17,6 +19,23 @@ Page({
   onLoad(options) {
     // 记录来源（cart=购物车 / usercenter=我的），登录成功后跳回
     this.source = options.from || '';
+    // 预加载用户协议/隐私政策，点击查看时直接展示，无需等待接口返回
+    this.preloadAgreements();
+  },
+
+  // 预加载协议内容到全局缓存（静默失败，点击时协议页会兜底拉取）
+  preloadAgreements() {
+    const app = getApp();
+    if (!app.globalData.agreements) {
+      app.globalData.agreements = {};
+      Promise.all([
+        fetchAgreement('agreement').catch(() => null),
+        fetchAgreement('privacy').catch(() => null),
+      ]).then(([agreement, privacy]) => {
+        if (agreement && agreement.content) app.globalData.agreements.agreement = agreement;
+        if (privacy && privacy.content) app.globalData.agreements.privacy = privacy;
+      });
+    }
   },
 
   // 勾选/取消协议
@@ -24,14 +43,14 @@ Page({
     this.setData({ agreed: !this.data.agreed });
   },
 
-  // 查看用户协议（占位，后续可接协议页）
+  // 查看用户协议（内容由管理后台配置）
   onViewAgreement() {
-    Toast({ context: this, selector: '#t-toast', message: '用户协议即将上线', icon: '' });
+    wx.navigateTo({ url: '/pages/agreement/detail/index?type=agreement' });
   },
 
-  // 查看隐私政策（占位，后续可接协议页）
+  // 查看隐私政策（内容由管理后台配置）
   onViewPrivacy() {
-    Toast({ context: this, selector: '#t-toast', message: '隐私政策即将上线', icon: '' });
+    wx.navigateTo({ url: '/pages/agreement/detail/index?type=privacy' });
   },
 
   // 手机号授权登录
@@ -49,6 +68,8 @@ Page({
     bindWxPhone(code)
       .then(() => {
         this.setData({ phoneBound: true });
+        // 写入统一登录态缓存，其他页面校验直接命中
+        setPhoneBound(true);
         Toast({ context: this, selector: '#t-toast', message: '手机号绑定成功', theme: 'success' });
       })
       .catch((err) => {
