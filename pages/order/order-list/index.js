@@ -1,4 +1,4 @@
-import { OrderStatus, buildOrderButtons } from '../config';
+import { OrderStatus, OrderButtonTypes, buildOrderButtons } from '../config';
 import {
   fetchOrders,
   fetchOrdersCount,
@@ -156,6 +156,7 @@ Page({
               amount: order.paymentAmount,
               totalAmount: order.totalAmount,
               logisticsNo: (order.logisticsVO || {}).logisticsNo || '',
+              logisticsCompany: (order.logisticsVO || {}).logisticsCompany || '',
               createTime: order.createTime,
               createTimeText: formatCreateTime(order.createTime),
               statusTimeText: formatStatusTime(order),
@@ -174,10 +175,7 @@ Page({
                     thumb: firstGoods.thumb,
                   }
                 : null,
-              buttons:
-                order.buttonVOs && order.buttonVOs.length
-                  ? order.buttonVOs
-                  : buildOrderButtons(order.orderStatus),
+              buttons: this.pickButtons(order),
               debugButtons: (() => {
                 const b =
                   order.buttonVOs && order.buttonVOs.length
@@ -200,6 +198,16 @@ Page({
         this.setData({ listLoading: 3 });
         return Promise.reject(err);
       });
+  },
+
+  // 生成订单按钮：没有运单号时不显示「查看物流」
+  pickButtons(order) {
+    const list =
+      order.buttonVOs && order.buttonVOs.length
+        ? order.buttonVOs
+        : buildOrderButtons(order.orderStatus);
+    const hasWaybill = !!(order.logisticsVO || {}).logisticsNo;
+    return hasWaybill ? list : list.filter((b) => b.type !== OrderButtonTypes.DELIVERY);
   },
 
   onReTryLoad() {

@@ -291,8 +291,10 @@ Page({
       logisticsNo: this.data.order.logisticsVO.logisticsNo,
       phoneNumber: this.data.order.logisticsVO.logisticsCompanyTel,
     };
+    // 带订单号跳转：物流页会实时向后端拉取最新轨迹（下拉可刷新）
+    const { orderNo } = this.data._order;
     wx.navigateTo({
-      url: `/pages/order/delivery-detail/index?data=${encodeURIComponent(
+      url: `/pages/order/delivery-detail/index?orderNo=${orderNo}&data=${encodeURIComponent(
         JSON.stringify(logisticsData),
       )}`,
     });

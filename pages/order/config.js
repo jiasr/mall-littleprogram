@@ -105,6 +105,7 @@ export const buildOrderButtons = (status) => {
       ];
     case OrderStatus.COMPLETE: // 3 已完成
       return [
+        { type: OrderButtonTypes.DELIVERY, name: '查看物流', primary: false },
         { type: OrderButtonTypes.COMMENT, name: '评价', primary: false },
         { type: OrderButtonTypes.DELETE, name: '删除订单', primary: false },
       ];
@@ -114,7 +115,8 @@ export const buildOrderButtons = (status) => {
       ];
     case OrderStatus.PENDING_RECEIPT: // 2 待收货
       return [
-        { type: OrderButtonTypes.CONFIRM, name: '确认收货', primary: false },
+        { type: OrderButtonTypes.DELIVERY, name: '查看物流', primary: false },
+        { type: OrderButtonTypes.CONFIRM, name: '确认收货', primary: true },
       ];
     case OrderStatus.PAYMENT_TIMEOUT: // 4 已取消
       return [

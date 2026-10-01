@@ -10,11 +10,11 @@
         <t-icon name="chevron-right" size="36rpx" color="#bbbbbb" />
       </view>
       <!-- 物流 -->
-      <view class="order-logistics" wx:if="{{logisticsNodes[0]}}" bindtap="onDeliveryClick">
+      <view class="order-logistics" wx:if="{{_order.logisticsNo}}" bindtap="onDeliveryClick">
         <t-icon name="deliver" size="40rpx" class="logistics-icon" prefix="wr" />
         <view class="logistics-content">
-          <view>{{logisticsNodes[0].desc}}</view>
-          <view class="logistics-time">{{logisticsNodes[0].date}}</view>
+          <view>{{logisticsNodes[0] ? logisticsNodes[0].desc : '查看物流详情'}}</view>
+          <view class="logistics-time">{{logisticsNodes[0] ? logisticsNodes[0].date : ''}}</view>
         </view>
         <t-icon class="logistics-back" name="arrow_forward" size="36rpx" prefix="wr" />
       </view>

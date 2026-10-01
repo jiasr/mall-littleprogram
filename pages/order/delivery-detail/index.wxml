@@ -8,6 +8,8 @@
 </wxs>
 
 <view class="page-section cells" wx:if="{{logisticsData.logisticsNo || logisticsData.company}}">
+	<view class="track-tip" wx:if="{{loading}}">正在刷新物流轨迹…</view>
+	<view class="track-tip track-tip--error" wx:elif="{{errorMsg}}">{{errorMsg}}</view>
 	<t-cell-group>
 		<t-cell
 		  title="快递单号"
@@ -62,7 +64,7 @@
 		  wx:for-index="index"
 		  wx:key="index"
 		  title="{{item.title}}"
-		  icon="slot"
+		  icon="{{item.icon ? 'slot' : ''}}"
 		>
 			<block wx:if="{{isUrl.isUrl(item.icon)}}">
 				<t-image

@@ -112,7 +112,26 @@ Component({
           break;
         case OrderButtonTypes.REBUY:
           this.onBuyAgain(this.data.order);
+          break;
+        case OrderButtonTypes.DELIVERY:
+          this.onViewDelivery(this.data.order);
+          break;
       }
+    },
+
+    /** 查看物流：跳物流详情页（带 orderNo，页面会实时拉轨迹） */
+    onViewDelivery(order) {
+      const { orderNo, logisticsNo, logisticsCompany } = order || {};
+      const data = {
+        logisticsNo: logisticsNo || '',
+        company: logisticsCompany || '',
+        nodes: [],
+      };
+      wx.navigateTo({
+        url: `/pages/order/delivery-detail/index?orderNo=${orderNo}&data=${encodeURIComponent(
+          JSON.stringify(data),
+        )}`,
+      });
     },
 
     onCancel() {

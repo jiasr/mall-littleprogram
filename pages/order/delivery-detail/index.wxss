@@ -97,3 +97,14 @@ page {
 .page-section__steps {
   padding: 24rpx;
 }
+
+.track-tip {
+  padding: 16rpx 24rpx;
+  font-size: 26rpx;
+  color: #999;
+  background: #fafafa;
+}
+
+.track-tip--error {
+  color: #e34d59;
+}
